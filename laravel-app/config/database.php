@@ -114,7 +114,7 @@ return [
 
         'mongodb' => [
             'driver' => 'mongodb',
-            'dsn' => env('DB_URI', 'mongodb+srv://' . env('DB_USERNAME') . ':' . urlencode(env('DB_PASSWORD')) . '@cocktail-api.di94f.mongodb.net/'),
+        'dsn' => env('DB_URI', 'mongodb+srv://' . env('DB_USERNAME') . ':' . urlencode(env('DB_PASSWORD')) . '@cocktail-api.di94f.mongodb.net/'),
             'database' => 'cocktail-api',
         ],
     ],
