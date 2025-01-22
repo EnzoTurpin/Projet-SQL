@@ -16,7 +16,7 @@ return [
     |
     */
 
-    'default' => env('DB_CONNECTION', 'sqlite'),
+    'default' => env('DB_CONNECTION', 'mongodb'),
 
     /*
     |--------------------------------------------------------------------------
@@ -112,6 +112,11 @@ return [
             // 'trust_server_certificate' => env('DB_TRUST_SERVER_CERTIFICATE', 'false'),
         ],
 
+        'mongodb' => [
+            'driver' => 'mongodb',
+            'dsn' => env('DB_URI', 'mongodb+srv://' . env('DB_USERNAME') . ':' . urlencode(env('DB_PASSWORD')) . '@cocktail-api.di94f.mongodb.net/'),
+            'database' => 'cocktail-api',
+        ],
     ],
 
     /*
@@ -168,6 +173,9 @@ return [
             'database' => env('REDIS_CACHE_DB', '1'),
         ],
 
+        'providers' => [
+            MongoDB\Laravel\MongoDBServiceProvider::class,
+        ],
     ],
 
 ];
