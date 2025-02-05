@@ -3,82 +3,31 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Auth;
 use App\Models\User;
-use Illuminate\Validation\Rule;
 
 class UserController extends Controller
 {
-    public function home(){
-        return view('user.home');
-    }
-
-    public function profile() {
-        $user = Auth::user();
-        return view('users.profile', compact('user'));
-    }
-
-    public function create()
+    /**
+     * Display a listing of the resource.
+     */
+    public function index()
     {
-        return view('users.create');
+        $users = User::paginate(15); // Get users from the DB and display them by 15 per page
+
+        return response()->json($users);
     }
 
-    public function store(Request $request){
-        $validatedData = $this->validateUser($request);
-        
-        $validatedData['password'] = bcrypt($validatedData['password']);
-
-        User::create($validatedData);
-
-        return redirect()->route('user.profile')
-            ->with('success', 'User created successfully.');
-    }
-
-    public function show() {
-        $user = Auth::user();
-        return view('users.show', compact('user'));
-    }
-
-    public function edit() {
-        $user = Auth::user();
-        return view('users.edit', compact('user'));
-    }
-
-    public function update(Request $request) {
-        $user = Auth::user();
-
-        $validateData = $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users,email,' . $user->id,
-            'password' => 'nullable|string|min:6|confirmed',
-        ]);
-
-        $user->update($validateData);
-
-        return redirect()->route('user.profile')->with('success', 'Profil mis à jour avec succès.');
-    }
-
-    public function destroy(string $id)
-    {
-        $user = User::findOrFail($id);
-        $user->delete();
-
-        Auth::logout();
-
-        return redirect()->route('login')
-            ->with('success', 'User deleted successfully.');
-    }
-
+    
     private function validateUser(Request $request, $userId = null)
     {
         $rules = [
             'name' => 'required|max:255',
-            'email' => [
-                'required',
-                'email',
+            'email' =>
+                'required|email',
                 Rule::unique('users')->ignore($userId),
-            ],
-            'password' => 'required|confirmed|min:6',
+            'password' => 'required|min:6|confirmed',
         ];
 
         $messages = [
@@ -90,5 +39,75 @@ class UserController extends Controller
         ];
 
         return $request->validate($rules, $messages);
+    }
+
+    /**
+     * Store a newly created resource in storage.
+     */
+    public function store(Request $request)
+    {
+        $validatedUser = $this->validateUser($request); // Confirm the data from the request
+        $validatedUser['password'] = bcrypt($validatedUser['password']); // Hash the password
+
+        User::create($validatedUser); // Create the user in the DB
+
+        return response()->json(['message' => 'User created successfully.']);
+    }
+
+    /**
+     * Display the specified resource.
+     */
+    public function show(string $id)
+    {
+        $user = User::findOrFail($id);
+
+        return response()->json($user);
+    }
+
+    /**
+     * Update the specified resource in storage.
+     */
+    public function update(Request $request)
+    {
+        $user = Auth::user();
+
+        $validatedData = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|string|email|max:255|unique:users,email,' . $user->id,
+            'password' => 'nullable|string|min:6|confirmed',
+        ]);
+
+        $user->update($validatedData);
+
+        return response()->json(['message' => 'Profile updated successfully.']);
+    }
+
+    public function create()
+    {
+        return response()->json(['message' => 'User created successfully.']);
+    }
+
+    public function edit()
+    {
+        $user = Auth::user();
+        return response()->json(['user' => $user, 'message' => 'User updated successfully.']);
+    }
+
+    /**
+     * Remove the specified resource from storage.
+     */
+    public function destroy(string $id)
+    {
+        User::findOrFail($id)->delete();
+
+        return response()->json(['message' => 'User deleted successfully.']);
+    }
+
+    private function ban($id) {
+        $user = User::findOrFail($id);
+        $user->banned = true;
+        $user->save();
+
+        return response()->json(['message' => 'User banned successfully.']);
     }
 }
