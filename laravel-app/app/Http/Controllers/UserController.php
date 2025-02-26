@@ -49,12 +49,13 @@ class UserController extends Controller
     {
         $validatedUser = $this->create($request);
 
-        // Hachage du mot de passe
+        // Password hashing
         $validatedUser['password'] = Hash::make($validatedUser['password']);
 
-        // Création de l'utilisateur
+        // User creation
         $user = User::create($validatedUser);
 
+        // Response in json format
         return response()->json([
             'message' => 'Utilisateur créé avec succès !',
             'user' => $user
@@ -117,10 +118,27 @@ class UserController extends Controller
      */
     public function ban(string $id)
     {
-        $user = User::findOrFail($id);
-        $user->banned = true;
-        $user->save();
+        if(!Auth::check()) {
+            return response()->json(['message' => 'Vous devez être connecté pour effectuer cette action.'], 401);
+        }
 
-        return response()->json(['message' => 'Utilisateur banni avec succès.']);
+        $admin = Auth::user();
+
+        if($admin->user_type !== 'admin') {
+            return response()->json(['message' => 'Vous n\'avez pas les droits pour effectuer cette action.'], 403);
+        } else {
+            try {
+                $user = User::findOrFail($id);
+                $updated = $user->update(['banned' => true]);
+
+                if(!$updated) {
+                    return response()->json(['message' => 'Une erreur est survenue lors du bannissement de l\'utilisateur.'], 500);
+                } else {
+                    return response()->json(['message' => 'Utilisateur banni avec succès.']);
+                }
+            } catch (\Exception $e) {
+                return response()->json(['message' => 'Utilisateur non trouvé.'], 404);
+            }
+        }
     }
 }

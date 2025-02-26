@@ -20,6 +20,7 @@ class User extends Model
         'name',
         'email',
         'password',
+        'user_type',
     ];
 
     protected $hidden = [
@@ -38,5 +39,17 @@ class User extends Model
     public function setPasswordAttribute($value)
     {
         $this->attributes['password'] = Hash::make($value);
+    }
+
+    protected static function boot() {
+        // Calls the parent boot function
+        parent::boot();
+
+        // Sets the default user type to 'user'
+        static::creating(function ($user) {
+            if (!isset($user->user_type)) {
+                $user->user_type = 'user';
+            }
+        });
     }
 }
