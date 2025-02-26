@@ -10,3 +10,4 @@ Route::post('/users', [UserController::class, 'store']);
 Route::get(USER_ID, [UserController::class, 'show']);
 Route::put(USER_ID, [UserController::class, 'update']);
 Route::delete(USER_ID, [UserController::class, 'destroy']);
+Route::post('/users/{id}/ban', [UserController::class, 'ban']);
