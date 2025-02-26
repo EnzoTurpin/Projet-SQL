@@ -36,6 +36,7 @@ class User extends Model
         ];
     }
 
+    // Hashes the password before saving it to the database
     public function setPasswordAttribute($value)
     {
         $this->attributes['password'] = Hash::make($value);

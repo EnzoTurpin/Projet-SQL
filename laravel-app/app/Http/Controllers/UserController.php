@@ -49,9 +49,6 @@ class UserController extends Controller
     {
         $validatedUser = $this->create($request);
 
-        // Password hashing
-        $validatedUser['password'] = Hash::make($validatedUser['password']);
-
         // User creation
         $user = User::create($validatedUser);
 
@@ -79,13 +76,6 @@ class UserController extends Controller
         $user = Auth::user();
 
         $validatedData = $this->create($request, $user->id);
-
-        // Mise à jour des champs sauf mot de passe
-        if ($request->filled('password')) {
-            $validatedData['password'] = Hash::make($validatedData['password']);
-        } else {
-            unset($validatedData['password']);
-        }
 
         $user->update($validatedData);
 
