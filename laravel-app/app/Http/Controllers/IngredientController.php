@@ -2,13 +2,13 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Ingredients;
+use App\Models\Ingredient;
 use Illuminate\Http\Request;
 
-class IngredientsController extends Controller
+class IngredientController extends Controller
 {
     public function index() {
-        $ingredients = Ingredients::all();
+        $ingredients = Ingredient::all();
 
         return response()->json($ingredients);
     }
@@ -24,7 +24,7 @@ class IngredientsController extends Controller
     public function store(Request $request) {
         $validatedIngredient = $this->create($request);
 
-        $ingredient = Ingredients::create($validatedIngredient);
+        $ingredient = Ingredient::create($validatedIngredient);
 
         return response()->json([
             'message' => 'Ingrédient créé avec succès !',
@@ -33,14 +33,14 @@ class IngredientsController extends Controller
     }
 
     public function show($id) {
-        $ingredient = Ingredients::findOrFail($id);
+        $ingredient = Ingredient::findOrFail($id);
         return response()->json($ingredient);
     }
 
     public function update(Request $request, $id) {
         $validatedIngredient = $this->create($request);
 
-        $ingredient = Ingredients::findOrFail($id);
+        $ingredient = Ingredient::findOrFail($id);
         $ingredient->update($validatedIngredient);
 
         return response()->json([

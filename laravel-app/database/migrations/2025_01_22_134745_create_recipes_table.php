@@ -16,7 +16,7 @@ return new class extends Migration
             $table->string('name');
             $table->foreignId('ingredient_id')
                 ->constrained('ingredients')
-                ->onDelete('cascade'); // Supprime les recettes liées à un ingrédient si celui-ci est supprimé
+                ->onDelete('cascade');
             $table->integer('quantity');
             $table->text('instructions');
             $table->string('category');
