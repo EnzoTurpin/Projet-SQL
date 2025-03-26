@@ -19,10 +19,9 @@ class IngredientController extends Controller
         // Validation des données de l'ingrédient
         return Validator::make($request->all(), [
             'name' => 'required|string|max:255',
-            'quantity' => 'required|string',
+            'quantity' => 'string',
         ], [
             'name.required' => 'Le champ nom est obligatoire.',
-            'quantity.required' => 'Le champ quantité est obligatoire.',
             'quantity.string' => 'La quantité doit être une chaîne de caractères.',
         ]);
     }
