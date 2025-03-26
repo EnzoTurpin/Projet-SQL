@@ -3,49 +3,93 @@
 namespace App\Http\Controllers;
 
 use App\Models\Ingredient;
+use App\Scripts\ResponseApi;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Validator;
 
 class IngredientController extends Controller
 {
     public function index() {
         $ingredients = Ingredient::all();
-
         return response()->json($ingredients);
     }
 
     protected function create(Request $request) {
-        return $request->validate([
+        // Validation des données de l'ingrédient
+        return Validator::make($request->all(), [
             'name' => 'required|string|max:255',
+            'quantity' => 'required|integer|min:1',
         ], [
             'name.required' => 'Le champ nom est obligatoire.',
+            'quantity.required' => 'Le champ quantité est obligatoire.',
+            'quantity.integer' => 'La quantité doit être un nombre entier.',
+            'quantity.min' => 'La quantité doit être d\'au moins 1.',
         ]);
     }
 
     public function store(Request $request) {
-        $validatedIngredient = $this->create($request);
+        $validator = $this->create($request);
 
-        $ingredient = Ingredient::create($validatedIngredient);
+        // Si la validation échoue, on renvoie les erreurs
+        if ($validator->fails()) {
+            return ResponseApi::sendApiResponse('fail', 'Certains champs sont manquants ou invalides.', $validator->errors(), 422);
+        }
 
-        return response()->json([
-            'message' => 'Ingrédient créé avec succès !',
-            'ingredient' => $ingredient
-        ], 201);
+        $ingredient = Ingredient::create($validator->validated());
+
+        return ResponseApi::sendApiResponse('success', 'Ingrédient créé avec succès !', $ingredient, 0);
     }
 
     public function show($id) {
-        $ingredient = Ingredient::findOrFail($id);
-        return response()->json($ingredient);
+        try {
+            $ingredient = Ingredient::where('_id', $id)->firstOrFail();
+            return response()->json($ingredient);
+        } catch (\Exception $e) {
+            return ResponseApi::sendApiResponse('fail', 'Ingrédient non trouvé', null, 404);
+        }
     }
 
     public function update(Request $request, $id) {
-        $validatedIngredient = $this->create($request);
+        $user = Auth::user();
+
+        // Vérification de la connexion de l'utilisateur
+        if (!$user) {
+            return ResponseApi::sendApiResponse('fail', 'Vous devez être connecté pour effectuer cette action.', [], 401);
+        }
 
         $ingredient = Ingredient::findOrFail($id);
-        $ingredient->update($validatedIngredient);
+        $validator = $this->create($request);
+    
+        // Si la validation échoue, on renvoie les erreurs
+        if ($validator->fails()) {
+            return ResponseApi::sendApiResponse('fail', 'Certains champs sont manquants ou invalides.', $validator->errors(), 422);
+        }
 
-        return response()->json([
-            'message' => 'Ingrédient mis à jour avec succès !',
-            'ingredient' => $ingredient
-        ]);
+        // Mise à jour des données de l'ingrédient
+        $ingredient->name = $validator->validated()['name'];
+        $ingredient->quantity = $validator->validated()['quantity'];
+
+        $ingredient->save();
+
+        return ResponseApi::sendApiResponse('success', 'Ingrédient mis à jour avec succès.', $ingredient, 0);
+    }
+
+    public function destroy($id) {
+        // Vérification que l'utilisateur est connecté
+        if (!Auth::check()) {
+            return ResponseApi::sendApiResponse('fail', 'Vous devez être connecté pour supprimer un ingrédient', null, 404);
+        }
+
+        $ingredient = Ingredient::findOrFail($id);
+
+        // Si l'utilisateur n'est pas un administrateur, vérifie qu'il est le propriétaire de l'ingrédient
+        if (Auth::id() !== $ingredient->user_id && Auth::user()->user_type !== 'admin') {
+            return ResponseApi::sendApiResponse('fail', 'Vous ne pouvez pas supprimer un ingrédient que vous ne possédez pas', null, 403);
+        } else {
+            $ingredient->delete();
+
+            return ResponseApi::sendApiResponse('success', 'Ingrédient supprimé avec succès.', null, 0);
+        }
     }
 }
