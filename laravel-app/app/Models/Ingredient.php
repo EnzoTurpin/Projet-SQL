@@ -15,5 +15,6 @@ class Ingredient extends Model
 
     protected $fillable = [
         'name',
+        'quantity',
     ];
 }

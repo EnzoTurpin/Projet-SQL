@@ -17,7 +17,8 @@ class RecipeController extends Controller
         return $request->validate([
             'name' => 'required|string|max:255',
             'ingredient_id' => 'required|array',
-            'ingredient_id*' => 'required|exist:ingredients,_id',
+            'ingredient.*.ingredients_id' => 'required|exist:ingredients,_id',
+            'ingredients.*.quantity' => 'required|string',
             'quantity' => 'required|min:1',
             'instructions' => 'required|string',
             'category' => 'required|exist:category,_id',

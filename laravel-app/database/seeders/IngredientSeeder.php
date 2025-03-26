@@ -2,7 +2,7 @@
 
 namespace Database\Seeders;
 
-use App\Models\Ingredients;
+use App\Models\Ingredient;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
@@ -13,7 +13,7 @@ class IngredientSeeder extends Seeder
      */
     public function run(): void
     {
-        Ingredients::factory()->create([
+        Ingredient::factory()->create([
             'name' => 'Tequila',
         ]);
     }
