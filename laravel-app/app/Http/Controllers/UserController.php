@@ -7,6 +7,7 @@ use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use App\Models\User;
+use App\Scripts\ResponseApi;
 
 class UserController extends Controller
 {
@@ -53,10 +54,7 @@ class UserController extends Controller
         $user = User::create($validatedUser);
 
         // Response in json format
-        return response()->json([
-            'message' => 'Utilisateur créé avec succès !',
-            'user' => $user
-        ], 201);
+        return ResponseApi::sendApiResponse('success', 'Utilisateur créé avec succès !', ['user' => $user], 201);
     }
 
     /**
@@ -64,8 +62,12 @@ class UserController extends Controller
      */
     public function show(string $id)
     {
-        $user = User::findOrFail($id);
-        return response()->json($user);
+        try {
+            $user = User::where('_id', $id)->firstOrFail();
+            return response()->json($user);
+        } catch (\Exception $e) {
+            return ResponseApi::sendApiResponse('fail', 'Utilisateur non trouvé', null,404);
+        }
     }
 
     /**
@@ -77,9 +79,13 @@ class UserController extends Controller
 
         $validatedData = $this->create($request, $user->id);
 
-        $user->update($validatedData);
+        if (!empty($validatedData['password'])) {
+            $validatedData['password'] = Hash::make($validatedData['password']);
+        } else {
+            unset($validatedData['password']);
+        }
 
-        return response()->json(['message' => 'Profil mis à jour avec succès.']);
+        return ResponseApi::sendApiResponse('success', 'Profil mis à jour avec succès.', $validatedData,0);
     }
 
     /**
@@ -88,18 +94,18 @@ class UserController extends Controller
     public function destroy(string $id)
     {
         if(!Auth::check()) {
-            return response()->json(['message' => 'Vous devez être connecté pour effectuer voir un profil.'], 401);
+            return ResponseApi::sendApiResponse('fail','Vous devez êtres connecté pour supprimer votre profil', null,404);
         }
 
         $user = User::findOrFail($id);
 
-        if(Auth::id() !== $user->id) {
-            return response()->json(['message' => 'Vous ne pouvez pas supprimer un autre utilisateur.'], 403);
+        if(Auth::id() !== $user->id  && Auth::user()->user_type !== 'admin') {
+            return ResponseApi::sendApiResponse('fail','Vous ne pouvez pas supprimer un autre utilisateur', null,403);
         } else {
             $user->delete();
             Auth::logout();
 
-            return response()->json(['message' => 'Profil supprimé avec succès. Vous êtes désormais déconnecté.']);
+            return ResponseApi::sendApiResponse('success','Profil supprimé avec succès, Vous allez être redirigé vers l\'accueil', null,0);
         }
     }
 
@@ -109,25 +115,25 @@ class UserController extends Controller
     public function ban(string $id)
     {
         if(!Auth::check()) {
-            return response()->json(['message' => 'Vous devez être connecté pour effectuer cette action.'], 401);
+            return ResponseApi::sendApiResponse('fail','Vous devez être connecté pour effectuer cette action.', null,401);
         }
 
         $admin = Auth::user();
 
         if($admin->user_type !== 'admin') {
-            return response()->json(['message' => 'Vous n\'avez pas les droits pour effectuer cette action.'], 403);
+            return ResponseApi::sendApiResponse('fail','Vous n\'avez pas les droits pour effectuer cette action.', null,403);
         } else {
             try {
                 $user = User::findOrFail($id);
                 $updated = $user->update(['banned' => true]);
 
                 if(!$updated) {
-                    return response()->json(['message' => 'Une erreur est survenue lors du bannissement de l\'utilisateur.'], 500);
+                    return ResponseApi::sendApiResponse('fail','Une erreur est survenue lors du bannissement de l\'utilisateur.', null,500);
                 } else {
-                    return response()->json(['message' => 'Utilisateur banni avec succès.']);
+                    return ResponseApi::sendApiResponse('success','Utilisateur banni avec succès.', null,0);
                 }
             } catch (\Exception $e) {
-                return response()->json(['message' => 'Utilisateur non trouvé.'], 404);
+                return ResponseApi::sendApiResponse('fail','Utilisateur non trouvé.', null,404);
             }
         }
     }
