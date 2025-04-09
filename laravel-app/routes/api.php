@@ -15,9 +15,6 @@ use App\Http\Controllers\UserController;
 */
 
 // Routes publiques
-Route::get('/test', function () {
-  return response()->json(['message' => 'API is working']);
-});
 Route::get('users', [UserController::class, 'index']);
 Route::get('/users/{id}', [UserController::class, 'show']);
 

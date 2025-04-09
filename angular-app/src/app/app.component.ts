@@ -1,12 +1,12 @@
 import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { HttpClientModule } from '@angular/common/http';
-import { UserService, User } from './services/user.service';
+import { CommonModule } from '@angular/common'; // Importer CommonModule
+import { UserService } from './services/user.service';
+import { ApiResponse, User } from './models/api-response.model';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [CommonModule, HttpClientModule],
+  imports: [CommonModule], // Ajouter CommonModule dans imports
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.css'],
 })
@@ -17,8 +17,8 @@ export class AppComponent implements OnInit {
 
   ngOnInit(): void {
     this.userService.getUsers().subscribe({
-      next: (response) => {
-        this.users = response;
+      next: (response: ApiResponse) => {
+        this.users = response.data.users;
       },
       error: (error) => {
         console.error('Erreur lors du chargement des utilisateurs', error);

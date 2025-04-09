@@ -1,12 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-
-export interface User {
-  _id: string;
-  name: string;
-  email: string;
-}
+import { ApiResponse } from '../models/api-response.model';
 
 @Injectable({
   providedIn: 'root',
@@ -14,7 +9,8 @@ export interface User {
 export class UserService {
   constructor(private http: HttpClient) {}
 
-  getUsers(): Observable<User[]> {
-    return this.http.get<User[]>('http://localhost:8000/api/users');
+  getUsers(): Observable<ApiResponse> {
+    // Retourner un Observable<ApiResponse>
+    return this.http.get<ApiResponse>('http://localhost:8000/api/users');
   }
 }

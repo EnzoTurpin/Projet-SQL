@@ -18,8 +18,7 @@ class UserController extends Controller
     {
         $users = User::all();
 
-        return ResponseApi::sendApiResponse('success', 'Liste 
-        des utilisateurs récupérée avec succès', ['users' => $users], 200);
+        return ResponseApi::sendApiResponse('success', 'Liste des utilisateurs récupérée avec succès', ['users' => $users], 200);
     }
 
     /**
