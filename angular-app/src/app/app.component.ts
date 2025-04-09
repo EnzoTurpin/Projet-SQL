@@ -1,12 +1,12 @@
 import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common'; // Importer CommonModule
+import { CommonModule } from '@angular/common';
 import { UserService } from './services/user.service';
 import { ApiResponse, User } from './models/api-response.model';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [CommonModule], // Ajouter CommonModule dans imports
+  imports: [CommonModule],
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.css'],
 })

@@ -15,6 +15,6 @@ return [
 
     'max_age' => 0,
 
-    'supports_credentials' => false,  // Désactiver, sauf si tu utilises des cookies ou des sessions
+    'supports_credentials' => true,
 ];
 
