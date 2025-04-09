@@ -15,13 +15,16 @@ use App\Http\Controllers\UserController;
 */
 
 // Routes publiques
-Route::get('/users', [UserController::class, 'index']);
-Route::post('/users', [UserController::class, 'store']);
+Route::get('/test', function () {
+  return response()->json(['message' => 'API is working']);
+});
+Route::get('users', [UserController::class, 'index']);
 Route::get('/users/{id}', [UserController::class, 'show']);
 
 // Routes nécessitant une authentification
 Route::middleware('auth:sanctum')->group(function () {
     Route::put('/users', [UserController::class, 'update']);
+    Route::post('/users', [UserController::class, 'store']);
     Route::delete('/users/{id}', [UserController::class, 'destroy']);
     Route::post('/users/{id}/ban', [UserController::class, 'ban']);
 });

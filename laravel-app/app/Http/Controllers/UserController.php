@@ -20,7 +20,6 @@ class UserController extends Controller
 
         return ResponseApi::sendApiResponse('success', 'Liste 
         des utilisateurs récupérée avec succès', ['users' => $users], 200);
-        
     }
 
     /**
