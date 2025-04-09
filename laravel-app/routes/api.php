@@ -1,13 +1,27 @@
 <?php
 
-use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\UserController;
 
-const USER_ID = '/users/{id}';
+/*
+|--------------------------------------------------------------------------
+| API Routes
+|--------------------------------------------------------------------------
+|
+| Here is where you can register API routes for your application. These
+| routes are loaded by the RouteServiceProvider within a group which
+| is assigned the "api" middleware group. Enjoy building your API!
+|
+*/
 
+// Routes publiques
 Route::get('/users', [UserController::class, 'index']);
 Route::post('/users', [UserController::class, 'store']);
-Route::get(USER_ID, [UserController::class, 'show']);
-Route::put(USER_ID, [UserController::class, 'update']);
-Route::delete(USER_ID, [UserController::class, 'destroy']);
-Route::post('/users/{id}/ban', [UserController::class, 'ban']);
+Route::get('/users/{id}', [UserController::class, 'show']);
+
+// Routes nécessitant une authentification
+Route::middleware('auth:sanctum')->group(function () {
+    Route::put('/users', [UserController::class, 'update']);
+    Route::delete('/users/{id}', [UserController::class, 'destroy']);
+    Route::post('/users/{id}/ban', [UserController::class, 'ban']);
+});

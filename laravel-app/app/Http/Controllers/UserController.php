@@ -16,9 +16,11 @@ class UserController extends Controller
      */
     public function index()
     {
-        $users = User::paginate(15);
+        $users = User::all();
 
-        return response()->json($users);
+        return ResponseApi::sendApiResponse('success', 'Liste 
+        des utilisateurs récupérée avec succès', ['users' => $users], 200);
+        
     }
 
     /**

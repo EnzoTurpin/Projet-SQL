@@ -12,11 +12,9 @@ export interface User {
   providedIn: 'root',
 })
 export class UserService {
-  private apiUrl = 'http://localhost:8000/api/users';
-
   constructor(private http: HttpClient) {}
 
-  getUsers(): Observable<{ data: User[] }> {
-    return this.http.get<{ data: User[] }>(this.apiUrl);
+  getUsers(): Observable<User[]> {
+    return this.http.get<User[]>('http://localhost:8000/api/users');
   }
 }
