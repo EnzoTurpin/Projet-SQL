@@ -1,12 +1,11 @@
-<main class="main">
-  <h1>👤 Liste des utilisateurs</h1>
+<header>
+  <nav>
+    <a routerLink="/login">Login</a>
+    <a routerLink="/register">Register</a>
+    <a routerLink="/profil">Profil</a>
+  </nav>
+</header>
 
-  <div class="users-list">
-    <div *ngFor="let user of users" class="user-card">
-      <div class="user-info">
-        <h3>{{ user.name }}</h3>
-        <p>{{ user.email }}</p>
-      </div>
-    </div>
-  </div>
+<main>
+  <router-outlet></router-outlet>
 </main>

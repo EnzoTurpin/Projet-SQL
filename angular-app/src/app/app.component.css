@@ -16,18 +16,18 @@ h1 {
 }
 
 .user-card {
-  border: 1px solid #ccc;
+  background: white;
   border-radius: 8px;
-  padding: 16px;
-  margin: 8px 0;
+  padding: 1rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .user-info h3 {
-  font-size: 1.2rem;
-  margin-bottom: 8px;
+  margin: 0;
+  color: #2c3e50;
 }
 
 .user-info p {
-  font-size: 1rem;
-  color: #555;
+  margin: 0.5rem 0 0;
+  color: #666;
 }

@@ -1,0 +1,43 @@
+<h2>Inscription</h2>
+
+<form (ngSubmit)="register()" #registerForm="ngForm">
+  <label for="name">Pseudo</label>
+  <input
+    type="name"
+    id="name"
+    [(ngModel)]="credentials.name"
+    name="name"
+    required
+  />
+
+  <label for="email">Email</label>
+  <input
+    type="email"
+    id="email"
+    [(ngModel)]="credentials.email"
+    name="email"
+    required
+  />
+
+  <label for="password">Mot de passe</label>
+  <input
+    type="password"
+    id="password"
+    [(ngModel)]="credentials.password"
+    name="password"
+    required
+  />
+
+  <label for="confirmedPassword">Confirmer le mot de passe</label>
+  <input
+    type="password"
+    id="confirmedPassword"
+    [(ngModel)]="credentials.confirmedPassword"
+    name="confirmedPassword"
+    required
+  />
+
+  <button type="submit" [disabled]="registerForm.invalid">Se connecter</button>
+</form>
+
+<p *ngIf="errorMessage" style="color: red">{{ errorMessage }}</p>
