@@ -24,7 +24,7 @@
 <!-- Barre de recherche -->
 <section class="py-12 bg-color-blanc-custom">
   <div class="container mx-auto px-4">
-    <div class="max-w-2xl mx-auto">
+    <div class="max-w-2xl mx-auto relative">
       <div class="relative">
         <input
           type="text"
@@ -43,7 +43,7 @@
 
       <!-- Suggestions de recherche -->
       <div
-        class="absolute z-10 w-full bg-white rounded-lg shadow-lg mt-2"
+        class="absolute z-10 w-full bg-white rounded-lg shadow-lg mt-2 max-w-full"
         *ngIf="showSuggestions && suggestions.length > 0"
       >
         <div class="p-4">
@@ -56,12 +56,12 @@
             >
               <img
                 [src]="recette.image"
-                class="w-12 h-12 object-cover rounded mr-3"
+                class="w-12 h-12 object-cover rounded mr-3 flex-shrink-0"
                 [alt]="recette.name"
               />
-              <div>
-                <div class="font-medium">{{ recette.name }}</div>
-                <div class="text-sm text-gray-500">
+              <div class="overflow-hidden">
+                <div class="font-medium truncate">{{ recette.name }}</div>
+                <div class="text-sm text-gray-500 truncate">
                   {{ recette.description }}
                 </div>
               </div>
