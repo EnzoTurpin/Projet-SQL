@@ -5,9 +5,8 @@ export interface Recette {
   image: string;
   difficulty: 'Facile' | 'Moyen' | 'Difficile';
   preparationTime: string;
-  isFavorite: boolean;
-  ingredients?: Ingredient[];
-  instructions?: string;
+  ingredients?: any[];
+  instructions?: string[] | string;
 }
 
 export interface Ingredient {

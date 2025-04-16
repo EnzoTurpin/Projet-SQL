@@ -2,6 +2,7 @@ import { Component, OnInit, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { ScrollService } from '../../services/scroll.service';
+import { CocktailService } from '../../services/cocktail.service';
 
 interface Cocktail {
   id: string;
@@ -25,26 +26,7 @@ export class HomeComponent implements OnInit {
   // Propriété pour gérer l'état du menu mobile
   isMobileMenuOpen = false;
 
-  featuredCocktails: Cocktail[] = [
-    {
-      id: 'margarita',
-      name: 'Margarita',
-      image:
-        'https://images.unsplash.com/photo-1556855810-ac404aa91e85?w=800&auto=format&fit=crop&q=60',
-    },
-    {
-      id: 'old-fashioned',
-      name: 'Old Fashioned',
-      image:
-        'https://images.unsplash.com/photo-1470337458703-46ad1756a187?w=800&auto=format&fit=crop&q=60',
-    },
-    {
-      id: 'mojito',
-      name: 'Mojito',
-      image:
-        'https://images.unsplash.com/photo-1551024709-8f23befc6f87?w=800&auto=format&fit=crop&q=60',
-    },
-  ];
+  featuredCocktails: Cocktail[] = [];
 
   tips: Tip[] = [
     {
@@ -67,11 +49,63 @@ export class HomeComponent implements OnInit {
     },
   ];
 
-  constructor(private scrollService: ScrollService, private router: Router) {}
+  constructor(
+    private scrollService: ScrollService,
+    private router: Router,
+    private cocktailService: CocktailService
+  ) {}
 
   ngOnInit(): void {
     // S'assure que la page commence en haut lors du chargement
     this.scrollService.scrollToTopImmediate();
+
+    // Charger les cocktails depuis l'API
+    this.loadCocktails();
+  }
+
+  // Méthode pour charger les cocktails
+  loadCocktails(): void {
+    this.cocktailService.getAllCocktails().subscribe({
+      next: (recipes) => {
+        // Limiter aux 3 premiers cocktails pour l'affichage en vedette
+        this.featuredCocktails = recipes.slice(0, 3).map((recipe) => ({
+          id: recipe._id || recipe.id,
+          name: recipe.name,
+          image:
+            recipe.image ||
+            'https://images.unsplash.com/photo-1551024709-8f23befc6f87?w=800&auto=format&fit=crop&q=60', // Image par défaut si absente
+        }));
+      },
+      error: (err) => {
+        console.error('Erreur lors du chargement des cocktails:', err);
+        // Fallback aux données en dur en cas d'erreur
+        this.setDefaultCocktails();
+      },
+    });
+  }
+
+  // Méthode de secours avec les données en dur
+  setDefaultCocktails(): void {
+    this.featuredCocktails = [
+      {
+        id: 'margarita',
+        name: 'Margarita',
+        image:
+          'https://images.unsplash.com/photo-1556855810-ac404aa91e85?w=800&auto=format&fit=crop&q=60',
+      },
+      {
+        id: 'old-fashioned',
+        name: 'Old Fashioned',
+        image:
+          'https://images.unsplash.com/photo-1470337458703-46ad1756a187?w=800&auto=format&fit=crop&q=60',
+      },
+      {
+        id: 'mojito',
+        name: 'Mojito',
+        image:
+          'https://images.unsplash.com/photo-1551024709-8f23befc6f87?w=800&auto=format&fit=crop&q=60',
+      },
+    ];
   }
 
   // Méthode pour basculer l'état du menu hamburger

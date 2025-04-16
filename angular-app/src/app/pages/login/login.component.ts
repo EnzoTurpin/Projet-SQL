@@ -13,8 +13,8 @@ import { AuthService } from '../../services/auth.service';
 })
 export class LoginComponent {
   credentials = {
-    email: 'test@example.com',
-    password: 'password',
+    email: '',
+    password: '',
   };
   error: string = '';
   emailError: string = '';

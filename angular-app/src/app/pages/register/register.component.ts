@@ -179,6 +179,7 @@ export class RegisterComponent {
         name: this.user.name,
         email: this.user.email,
         password: this.user.password,
+        password_confirmation: this.user.confirmPassword,
       })
       .subscribe({
         next: () => {
