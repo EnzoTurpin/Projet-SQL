@@ -1,43 +1,228 @@
-<h2>Inscription</h2>
+<div
+  class="min-h-screen bg-color-blanc-custom flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8"
+>
+  <div
+    class="max-w-md w-full space-y-8 bg-white rounded-lg shadow-custom p-8 mb-12"
+  >
+    <div>
+      <h2 class="mt-6 text-center text-3xl font-extrabold text-tropical-vibes">
+        Créer un compte
+      </h2>
+      <p class="mt-2 text-center text-sm text-gray-600">
+        Ou
+        <a
+          routerLink="/login"
+          class="font-medium text-tropical-vibes hover:text-opacity-80"
+        >
+          connectez-vous à votre compte existant
+        </a>
+      </p>
+    </div>
+    <form class="mt-8 space-y-6" (ngSubmit)="onSubmit()">
+      <div class="rounded-md shadow-sm space-y-4">
+        <div class="relative">
+          <input
+            id="name"
+            name="name"
+            type="text"
+            required
+            [(ngModel)]="user.name"
+            (ngModelChange)="onNameChange()"
+            class="peer block w-full h-12 px-3 py-3 text-gray-900 bg-transparent border border-gray-300 rounded-md appearance-none focus:outline-none focus:ring-tropical-vibes focus:border-tropical-vibes"
+            placeholder=" "
+          />
+          <label
+            for="name"
+            class="absolute text-sm text-gray-500 duration-150 transform scale-100 top-1/2 -translate-y-1/2 origin-[0] left-2.5 peer-focus:text-tropical-vibes peer-placeholder-shown:scale-100 peer-focus:scale-75 peer-focus:-translate-y-4 peer-focus:text-xs peer-focus:top-2 peer-[&:not(:placeholder-shown)]:scale-75 peer-[&:not(:placeholder-shown)]:-translate-y-4 peer-[&:not(:placeholder-shown)]:text-xs peer-[&:not(:placeholder-shown)]:top-2 z-10 px-1 bg-white transition-all"
+            >Nom complet</label
+          >
+        </div>
+        <div *ngIf="nameError" class="mt-1 text-xs text-red-500">
+          {{ nameError }}
+        </div>
+        <div class="relative">
+          <input
+            id="email"
+            name="email"
+            type="email"
+            required
+            [(ngModel)]="user.email"
+            (ngModelChange)="onEmailChange()"
+            class="peer block w-full h-12 px-3 py-3 text-gray-900 bg-transparent border border-gray-300 rounded-md appearance-none focus:outline-none focus:ring-tropical-vibes focus:border-tropical-vibes"
+            placeholder=" "
+          />
+          <label
+            for="email"
+            class="absolute text-sm text-gray-500 duration-150 transform scale-100 top-1/2 -translate-y-1/2 origin-[0] left-2.5 peer-focus:text-tropical-vibes peer-placeholder-shown:scale-100 peer-focus:scale-75 peer-focus:-translate-y-4 peer-focus:text-xs peer-focus:top-2 peer-[&:not(:placeholder-shown)]:scale-75 peer-[&:not(:placeholder-shown)]:-translate-y-4 peer-[&:not(:placeholder-shown)]:text-xs peer-[&:not(:placeholder-shown)]:top-2 z-10 px-1 bg-white transition-all"
+            >Adresse email</label
+          >
+        </div>
+        <div *ngIf="emailError" class="mt-1 text-xs text-red-500">
+          {{ emailError }}
+        </div>
+        <div class="relative">
+          <input
+            id="password"
+            name="password"
+            [type]="showPassword ? 'text' : 'password'"
+            required
+            [(ngModel)]="user.password"
+            (ngModelChange)="onPasswordChange()"
+            class="peer block w-full h-12 px-3 py-3 text-gray-900 bg-transparent border border-gray-300 rounded-md appearance-none focus:outline-none focus:ring-tropical-vibes focus:border-tropical-vibes"
+            placeholder=" "
+          />
+          <label
+            for="password"
+            class="absolute text-sm text-gray-500 duration-150 transform scale-100 top-1/2 -translate-y-1/2 origin-[0] left-2.5 peer-focus:text-tropical-vibes peer-placeholder-shown:scale-100 peer-focus:scale-75 peer-focus:-translate-y-4 peer-focus:text-xs peer-focus:top-2 peer-[&:not(:placeholder-shown)]:scale-75 peer-[&:not(:placeholder-shown)]:-translate-y-4 peer-[&:not(:placeholder-shown)]:text-xs peer-[&:not(:placeholder-shown)]:top-2 z-10 px-1 bg-white transition-all"
+            >Mot de passe</label
+          >
+          <button
+            type="button"
+            (click)="showPassword = !showPassword"
+            class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-tropical-vibes focus:outline-none"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="h-5 w-5"
+              [class.hidden]="showPassword"
+              viewBox="0 0 20 20"
+              fill="currentColor"
+            >
+              <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
+              <path
+                fill-rule="evenodd"
+                d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z"
+                clip-rule="evenodd"
+              />
+            </svg>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="h-5 w-5"
+              [class.hidden]="!showPassword"
+              viewBox="0 0 20 20"
+              fill="currentColor"
+            >
+              <path
+                fill-rule="evenodd"
+                d="M3.707 2.293a1 1 0 00-1.414 1.414l14 14a1 1 0 001.414-1.414l-1.473-1.473A10.014 10.014 0 0019.542 10C18.268 5.943 14.478 3 10 3a9.958 9.958 0 00-4.512 1.074l-1.78-1.781zm4.261 4.26l1.514 1.515a2.003 2.003 0 012.45 2.45l1.514 1.514a4 4 0 00-5.478-5.478z"
+                clip-rule="evenodd"
+              />
+              <path
+                d="M12.454 16.697L9.75 13.992a4 4 0 01-3.742-3.741L2.335 6.578A9.98 9.98 0 00.458 10c1.274 4.057 5.065 7 9.542 7 .847 0 1.669-.105 2.454-.303z"
+              />
+            </svg>
+          </button>
+        </div>
+        <div *ngIf="passwordErrors.length > 0" class="mt-2 space-y-1">
+          <p class="text-xs font-medium text-gray-700">
+            Exigences du mot de passe:
+          </p>
+          <ul class="pl-5 space-y-1">
+            <li
+              *ngFor="let error of passwordErrors"
+              class="text-xs text-red-500 list-disc"
+            >
+              {{ error }}
+            </li>
+          </ul>
+        </div>
+        <div class="relative">
+          <input
+            id="confirmPassword"
+            name="confirmPassword"
+            [type]="showConfirmPassword ? 'text' : 'password'"
+            required
+            [(ngModel)]="user.confirmPassword"
+            (ngModelChange)="onConfirmPasswordChange()"
+            class="peer block w-full h-12 px-3 py-3 text-gray-900 bg-transparent border border-gray-300 rounded-md appearance-none focus:outline-none focus:ring-tropical-vibes focus:border-tropical-vibes"
+            placeholder=" "
+          />
+          <label
+            for="confirmPassword"
+            class="absolute text-sm text-gray-500 duration-150 transform scale-100 top-1/2 -translate-y-1/2 origin-[0] left-2.5 peer-focus:text-tropical-vibes peer-placeholder-shown:scale-100 peer-focus:scale-75 peer-focus:-translate-y-4 peer-focus:text-xs peer-focus:top-2 peer-[&:not(:placeholder-shown)]:scale-75 peer-[&:not(:placeholder-shown)]:-translate-y-4 peer-[&:not(:placeholder-shown)]:text-xs peer-[&:not(:placeholder-shown)]:top-2 z-10 px-1 bg-white transition-all"
+            >Confirmer le mot de passe</label
+          >
+          <button
+            type="button"
+            (click)="showConfirmPassword = !showConfirmPassword"
+            class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-tropical-vibes focus:outline-none"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="h-5 w-5"
+              [class.hidden]="showConfirmPassword"
+              viewBox="0 0 20 20"
+              fill="currentColor"
+            >
+              <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
+              <path
+                fill-rule="evenodd"
+                d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z"
+                clip-rule="evenodd"
+              />
+            </svg>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="h-5 w-5"
+              [class.hidden]="!showConfirmPassword"
+              viewBox="0 0 20 20"
+              fill="currentColor"
+            >
+              <path
+                fill-rule="evenodd"
+                d="M3.707 2.293a1 1 0 00-1.414 1.414l14 14a1 1 0 001.414-1.414l-1.473-1.473A10.014 10.014 0 0019.542 10C18.268 5.943 14.478 3 10 3a9.958 9.958 0 00-4.512 1.074l-1.78-1.781zm4.261 4.26l1.514 1.515a2.003 2.003 0 012.45 2.45l1.514 1.514a4 4 0 00-5.478-5.478z"
+                clip-rule="evenodd"
+              />
+              <path
+                d="M12.454 16.697L9.75 13.992a4 4 0 01-3.742-3.741L2.335 6.578A9.98 9.98 0 00.458 10c1.274 4.057 5.065 7 9.542 7 .847 0 1.669-.105 2.454-.303z"
+              />
+            </svg>
+          </button>
+        </div>
+        <div *ngIf="confirmPasswordError" class="mt-1 text-xs text-red-500">
+          {{ confirmPasswordError }}
+        </div>
+      </div>
 
-<form (ngSubmit)="register()" #registerForm="ngForm">
-  <label for="name">Pseudo</label>
-  <input
-    type="name"
-    id="name"
-    [(ngModel)]="credentials.name"
-    name="name"
-    required
-  />
+      <div *ngIf="error" class="text-red-500 text-sm text-center mt-4">
+        {{ error }}
+      </div>
 
-  <label for="email">Email</label>
-  <input
-    type="email"
-    id="email"
-    [(ngModel)]="credentials.email"
-    name="email"
-    required
-  />
+      <div class="flex items-start mt-4">
+        <div class="flex items-center h-5">
+          <input
+            id="termsAccepted"
+            name="termsAccepted"
+            type="checkbox"
+            [(ngModel)]="termsAccepted"
+            required
+            class="w-4 h-4 border border-gray-300 rounded bg-gray-50 focus:ring-3 focus:ring-tropical-vibes text-tropical-vibes"
+          />
+        </div>
+        <div class="ml-3 text-sm">
+          <label for="termsAccepted" class="text-gray-600">
+            J'accepte les
+            <a
+              href="/conditions-utilisation"
+              class="text-tropical-vibes hover:underline"
+              >conditions générales d'utilisation</a
+            >
+          </label>
+          <div *ngIf="termsError" class="text-red-500 text-xs mt-1">
+            Vous devez accepter les conditions d'utilisation
+          </div>
+        </div>
+      </div>
 
-  <label for="password">Mot de passe</label>
-  <input
-    type="password"
-    id="password"
-    [(ngModel)]="credentials.password"
-    name="password"
-    required
-  />
-
-  <label for="confirmedPassword">Confirmer le mot de passe</label>
-  <input
-    type="password"
-    id="confirmedPassword"
-    [(ngModel)]="credentials.confirmedPassword"
-    name="confirmedPassword"
-    required
-  />
-
-  <button type="submit" [disabled]="registerForm.invalid">Se connecter</button>
-</form>
-
-<p *ngIf="errorMessage" style="color: red">{{ errorMessage }}</p>
+      <div class="mt-6">
+        <button
+          type="submit"
+          [disabled]="loading"
+          class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-tropical-vibes hover:bg-opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-tropical-vibes disabled:opacity-50"
+        >
+          {{ loading ? "Création en cours..." : "Créer un compte" }}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

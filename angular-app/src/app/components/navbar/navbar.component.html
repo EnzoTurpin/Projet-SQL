@@ -1,0 +1,182 @@
+<nav
+  class="bg-color-blanc-custom shadow-md w-full sm:relative md:static lg:static xl:static 2xl:static"
+>
+  <div class="max-w-7xl mx-auto px-4">
+    <div class="flex justify-between h-16">
+      <div class="flex">
+        <!-- Logo -->
+        <div class="flex-shrink-0 flex items-center">
+          <a routerLink="/" class="flex-shrink-0">
+            <span class="text-2xl font-bold text-tropical-vibes"
+              >CocktailRecipes</span
+            >
+          </a>
+        </div>
+
+        <!-- Menu desktop -->
+        <div class="hidden sm:ml-6 sm:flex sm:space-x-8">
+          <a
+            routerLink="/"
+            routerLinkActive="border-tropical-vibes text-gray-900"
+            [routerLinkActiveOptions]="{ exact: true }"
+            class="inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium border-transparent text-gray-600 hover:border-tropical-vibes hover:text-tropical-vibes"
+          >
+            Accueil
+          </a>
+          <a
+            routerLink="/recettes"
+            routerLinkActive="border-tropical-vibes text-gray-900"
+            class="inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium border-transparent text-gray-600 hover:border-tropical-vibes hover:text-tropical-vibes"
+          >
+            Nos Recettes
+          </a>
+          <a
+            routerLink="/about"
+            routerLinkActive="border-tropical-vibes text-gray-900"
+            class="inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium border-transparent text-gray-600 hover:border-tropical-vibes hover:text-tropical-vibes"
+          >
+            À propos
+          </a>
+        </div>
+      </div>
+
+      <!-- Authentication Links -->
+      <div class="hidden sm:flex sm:items-center">
+        <!-- Si non authentifié, afficher le bouton de connexion -->
+        <a
+          *ngIf="!isAuthenticated"
+          routerLink="/login"
+          class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-tropical-vibes hover:bg-opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-tropical-vibes"
+        >
+          Se connecter
+        </a>
+
+        <!-- Si authentifié, afficher l'avatar -->
+        <div *ngIf="isAuthenticated" class="relative ml-3">
+          <div>
+            <a
+              routerLink="/profile"
+              class="flex items-center space-x-2 cursor-pointer group"
+            >
+              <div
+                class="w-10 h-10 rounded-full overflow-hidden border-2 border-transparent group-hover:border-tropical-vibes"
+              >
+                <!-- Avatar par défaut avec les initiales -->
+                <div
+                  class="w-full h-full flex items-center justify-center bg-tropical-vibes text-white font-semibold"
+                >
+                  {{ currentUser?.name.charAt(0).toUpperCase() }}
+                </div>
+                <!-- Plus tard, vous pourrez ajouter une vraie image de profil -->
+                <!-- <img v-if="user.avatar" :src="user.avatar" class="w-full h-full object-cover" /> -->
+              </div>
+              <span
+                class="text-gray-700 text-sm group-hover:text-tropical-vibes"
+                >{{ currentUser?.name }}</span
+              >
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bouton hamburger -->
+      <button
+        class="menu-hamburger p-2 bg-gray-100 rounded-md"
+        (click)="toggleMenu()"
+        style="padding: 8px"
+      >
+        <svg
+          *ngIf="!isMenuOpen"
+          xmlns="http://www.w3.org/2000/svg"
+          class="h-6 w-6 text-tropical-vibes"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M4 6h16M4 12h16M4 18h16"
+          />
+        </svg>
+        <svg
+          *ngIf="isMenuOpen"
+          xmlns="http://www.w3.org/2000/svg"
+          class="h-6 w-6 text-tropical-vibes"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M6 18L18 6M6 6l12 12"
+          />
+        </svg>
+      </button>
+    </div>
+
+    <!-- Menu mobile -->
+    <div class="menu-mobile border-t border-gray-200" *ngIf="isMenuOpen">
+      <div class="px-2 pt-2 pb-3 space-y-1">
+        <a
+          routerLink="/"
+          routerLinkActive="bg-tropical-vibes bg-opacity-10 text-tropical-vibes"
+          [routerLinkActiveOptions]="{ exact: true }"
+          class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-100"
+          (click)="closeMenu()"
+        >
+          Accueil
+        </a>
+        <a
+          routerLink="/recettes"
+          routerLinkActive="bg-tropical-vibes bg-opacity-10 text-tropical-vibes"
+          class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-100"
+          (click)="closeMenu()"
+        >
+          Nos Recettes
+        </a>
+        <a
+          routerLink="/about"
+          routerLinkActive="bg-tropical-vibes bg-opacity-10 text-tropical-vibes"
+          class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-100"
+          (click)="closeMenu()"
+        >
+          À propos
+        </a>
+
+        <!-- Menu mobile - lien de connexion si non authentifié -->
+        <a
+          *ngIf="!isAuthenticated"
+          routerLink="/login"
+          class="block px-3 py-2 rounded-md text-base font-medium text-tropical-vibes hover:bg-gray-100"
+          (click)="closeMenu()"
+        >
+          Se connecter
+        </a>
+
+        <!-- Menu mobile - lien de profil si authentifié -->
+        <a
+          *ngIf="isAuthenticated"
+          routerLink="/profile"
+          class="block px-3 py-2 rounded-md text-base font-medium text-tropical-vibes hover:bg-gray-100"
+          (click)="closeMenu()"
+        >
+          Mon profil
+        </a>
+
+        <!-- Menu mobile - lien de déconnexion si authentifié -->
+        <a
+          *ngIf="isAuthenticated"
+          href="javascript:void(0)"
+          class="block px-3 py-2 rounded-md text-base font-medium text-red-500 hover:bg-gray-100"
+          (click)="logout(); closeMenu()"
+        >
+          Déconnexion
+        </a>
+      </div>
+    </div>
+  </div>
+</nav>

@@ -1,0 +1,159 @@
+<div class="min-h-screen bg-color-blanc-custom overflow-hidden">
+  <!-- Hero Section avec bannière colorée en haut -->
+  <div class="w-full h-2 bg-red-500"></div>
+
+  <!-- Section principale avec titre et description -->
+  <div
+    class="container mx-auto px-4 sm:px-6 py-10 sm:py-16 text-center max-w-4xl"
+  >
+    <h1
+      class="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-4 sm:mb-6 text-tropical-vibes leading-tight"
+    >
+      CocktailRecipes
+    </h1>
+    <p
+      class="text-base sm:text-lg md:text-xl text-gray-700 mb-6 sm:mb-8 max-w-xl sm:max-w-2xl mx-auto"
+    >
+      Découvrez nos délicieuses recettes de cocktails et devenez un expert des
+      boissons rafraîchissantes
+    </p>
+    <a
+      (click)="navigateToPage('/recettes')"
+      class="inline-block px-6 sm:px-8 py-2.5 sm:py-3 bg-red-500 text-white font-semibold rounded-full hover:bg-red-600 transition-all duration-300 transform hover:scale-105 shadow-lg cursor-pointer text-sm sm:text-base"
+    >
+      Explorer nos recettes
+    </a>
+  </div>
+
+  <!-- Section des recettes du moment -->
+  <div class="container mx-auto px-4 sm:px-6 py-8 sm:py-12">
+    <h2
+      class="text-xl sm:text-2xl md:text-3xl font-bold mb-6 sm:mb-8 text-gray-800"
+    >
+      Les recettes du moment
+    </h2>
+
+    <div
+      class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 md:gap-8"
+    >
+      <!-- Boucle sur les cocktails -->
+      <div *ngFor="let cocktail of featuredCocktails" class="group">
+        <a
+          [routerLink]="['/cocktail', cocktail.id]"
+          class="block cursor-pointer h-full"
+        >
+          <div
+            class="relative overflow-hidden rounded-lg shadow-lg cursor-pointer transition-all duration-300 transform group-hover:scale-105 h-full"
+          >
+            <div
+              class="absolute top-0 left-0 w-full bg-gradient-to-b from-black/70 to-transparent p-3 sm:p-4 z-10"
+            >
+              <h3 class="text-lg sm:text-xl font-semibold text-white">
+                {{ cocktail.name }}
+              </h3>
+            </div>
+            <img
+              [src]="cocktail.image"
+              [alt]="cocktail.name"
+              class="w-full h-48 sm:h-56 md:h-64 object-cover transition-all duration-500 group-hover:scale-110"
+            />
+            <div
+              class="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+            ></div>
+          </div>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Section des trucs et astuces -->
+  <div class="container mx-auto px-4 sm:px-6 py-10 sm:py-16">
+    <h2
+      class="text-xl sm:text-2xl md:text-3xl font-bold mb-6 sm:mb-8 text-gray-800"
+    >
+      Trucs et Astuces
+    </h2>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8">
+      <!-- Boucle sur les astuces -->
+      <div
+        *ngFor="let tip of tips"
+        class="bg-yellow-200 rounded-lg p-4 sm:p-6 shadow-md hover:shadow-lg transition-shadow duration-300"
+      >
+        <h3 class="text-lg sm:text-xl font-bold mb-3 sm:mb-4 text-gray-800">
+          {{ tip.title }}
+        </h3>
+        <ul
+          class="list-disc pl-5 space-y-1.5 sm:space-y-2 text-sm sm:text-base text-gray-700"
+        >
+          <li *ngFor="let point of tip.points">{{ point }}</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bannière call-to-action -->
+  <div
+    class="w-full py-10 sm:py-16 bg-gradient-to-r from-tropical-vibes to-red-500 mt-10 sm:mt-16"
+  >
+    <div class="container mx-auto px-4 sm:px-6 text-center">
+      <h2
+        class="text-2xl sm:text-3xl md:text-4xl font-bold mb-4 sm:mb-6 text-white leading-tight"
+      >
+        Prêt à créer vos propres cocktails?
+      </h2>
+      <p
+        class="text-base sm:text-lg md:text-xl text-white mb-6 sm:mb-8 max-w-xl sm:max-w-2xl mx-auto"
+      >
+        Explorez notre collection complète de recettes et devenez un mixologue
+        expert!
+      </p>
+      <div class="flex justify-center">
+        <a
+          (click)="navigateToPage('/recettes')"
+          class="inline-block px-6 sm:px-8 py-2.5 sm:py-3 bg-white text-red-500 font-semibold rounded-full hover:bg-gray-100 transition-all duration-300 transform hover:scale-105 shadow-lg cursor-pointer text-sm sm:text-base"
+        >
+          Voir toutes nos recettes
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer responsive -->
+  <footer class="bg-gray-100 py-8 mt-10">
+    <div class="container mx-auto px-4 sm:px-6">
+      <div class="flex flex-col md:flex-row justify-between items-center">
+        <div class="mb-6 md:mb-0">
+          <h3 class="text-lg sm:text-xl font-bold text-tropical-vibes mb-2">
+            CocktailRecipes
+          </h3>
+          <p class="text-sm text-gray-600">
+            Des recettes de cocktails pour toutes les occasions
+          </p>
+        </div>
+        <div class="flex flex-wrap justify-center gap-4 sm:gap-6">
+          <a
+            routerLink="/about"
+            class="text-sm text-gray-700 hover:text-tropical-vibes cursor-pointer"
+            >À propos</a
+          >
+          <a
+            routerLink="/recettes"
+            class="text-sm text-gray-700 hover:text-tropical-vibes cursor-pointer"
+            >Recettes</a
+          >
+          <a
+            routerLink="/conditions-utilisation"
+            class="text-sm text-gray-700 hover:text-tropical-vibes cursor-pointer"
+            >Conditions d'utilisation</a
+          >
+        </div>
+      </div>
+      <div class="border-t border-gray-200 mt-6 pt-6 text-center">
+        <p class="text-xs sm:text-sm text-gray-500">
+          © 2023 CocktailRecipes. Tous droits réservés.
+        </p>
+      </div>
+    </div>
+  </footer>
+</div>

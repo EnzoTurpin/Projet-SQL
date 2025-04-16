@@ -1,0 +1,149 @@
+<div class="min-h-screen bg-color-blanc-custom py-12 px-4 sm:px-6 lg:px-8">
+  <div class="max-w-4xl mx-auto">
+    <!-- Bouton de retour en haut de la page -->
+    <div class="mb-4">
+      <button
+        (click)="goBack()"
+        class="bg-white/90 hover:bg-white text-gray-800 p-3 rounded-full shadow-lg transition-all duration-300 hover:shadow-xl flex items-center gap-2"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          class="h-6 w-6"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M10 19l-7-7m0 0l7-7m-7 7h18"
+          />
+        </svg>
+        <span>Retour</span>
+      </button>
+    </div>
+
+    <div *ngIf="cocktail" class="space-y-8">
+      <!-- En-tête avec image et informations principales -->
+      <div class="flex flex-col md:flex-row gap-8">
+        <div class="md:w-1/2 relative">
+          <img
+            [src]="cocktail.image"
+            [alt]="cocktail.name"
+            class="w-full h-96 object-cover rounded-lg shadow-lg"
+          />
+        </div>
+        <div class="md:w-1/2 space-y-4">
+          <h1 class="text-3xl font-bold text-tropical-vibes">
+            {{ cocktail.name }}
+          </h1>
+          <p class="text-gray-600">{{ cocktail.description }}</p>
+
+          <div class="grid grid-cols-2 gap-4">
+            <div class="bg-white p-4 rounded-lg shadow">
+              <p class="text-sm text-gray-500">Difficulté</p>
+              <p class="font-semibold text-tropical-vibes">
+                {{ cocktail.difficulty }}
+              </p>
+            </div>
+            <div class="bg-white p-4 rounded-lg shadow">
+              <p class="text-sm text-gray-500">Temps de préparation</p>
+              <p class="font-semibold text-tropical-vibes">
+                {{ cocktail.preparationTime }}
+              </p>
+            </div>
+            <div class="bg-white p-4 rounded-lg shadow">
+              <p class="text-sm text-gray-500">Niveau d'alcool</p>
+              <div class="flex items-center space-x-2">
+                <span
+                  [class]="getAlcoholLevelColor(cocktail.alcoholLevel)"
+                  class="font-semibold text-lg"
+                >
+                  {{ cocktail.alcoholLevel }}%
+                </span>
+                <div class="w-24 h-3 bg-gray-200 rounded-full overflow-hidden">
+                  <div
+                    [class]="
+                      'h-full rounded-full ' +
+                      (cocktail.alcoholLevel < 10
+                        ? 'bg-green-500'
+                        : cocktail.alcoholLevel < 30
+                        ? 'bg-orange-500'
+                        : 'bg-red-500')
+                    "
+                    [style.width.%]="
+                      cocktail.alcoholLevel > 50
+                        ? 100
+                        : cocktail.alcoholLevel * 2
+                    "
+                  ></div>
+                </div>
+              </div>
+            </div>
+            <div class="bg-white p-4 rounded-lg shadow">
+              <p class="text-sm text-gray-500">Type de verre</p>
+              <p class="font-semibold text-tropical-vibes">
+                {{ cocktail.glassType }}
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Ingrédients -->
+      <div class="bg-white p-6 rounded-lg shadow">
+        <h2 class="text-2xl font-semibold text-tropical-vibes mb-4">
+          Ingrédients
+        </h2>
+        <ul class="space-y-2">
+          <li
+            *ngFor="let ingredient of cocktail.ingredients"
+            class="flex justify-between items-center"
+          >
+            <span class="text-gray-700">{{ ingredient.name }}</span>
+            <span class="text-tropical-vibes font-medium">{{
+              ingredient.amount
+            }}</span>
+          </li>
+        </ul>
+      </div>
+
+      <!-- Instructions -->
+      <div class="bg-white p-6 rounded-lg shadow">
+        <h2 class="text-2xl font-semibold text-tropical-vibes mb-4">
+          Instructions
+        </h2>
+        <ol class="space-y-4">
+          <li
+            *ngFor="let instruction of cocktail.instructions; let i = index"
+            class="flex items-start"
+          >
+            <span
+              class="flex-shrink-0 w-8 h-8 bg-tropical-vibes text-white rounded-full flex items-center justify-center mr-4"
+              >{{ i + 1 }}</span
+            >
+            <span class="text-gray-700">{{ instruction }}</span>
+          </li>
+        </ol>
+      </div>
+
+      <!-- Garniture -->
+      <div class="bg-white p-6 rounded-lg shadow">
+        <h2 class="text-2xl font-semibold text-tropical-vibes mb-4">
+          Garniture
+        </h2>
+        <p class="text-gray-700">{{ cocktail.garnish }}</p>
+      </div>
+    </div>
+
+    <div *ngIf="!cocktail" class="text-center py-12">
+      <h2 class="text-2xl font-semibold text-tropical-vibes mb-4">
+        Cocktail non trouvé
+      </h2>
+      <p class="text-gray-600">
+        Le cocktail que vous recherchez n'existe pas ou n'est plus disponible.
+      </p>
+    </div>
+  </div>
+</div>

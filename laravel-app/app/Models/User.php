@@ -2,13 +2,16 @@
 
 namespace App\Models;
 
+use Illuminate\Auth\Authenticatable;
+use Illuminate\Contracts\Auth\Authenticatable as AuthenticatableContract;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use MongoDB\Laravel\Eloquent\Model;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Notifications\Notifiable;
 
-class User extends Model
+class User extends Model implements AuthenticatableContract
 {
+    use Authenticatable;
     use Notifiable;
     use HasFactory;
 
@@ -52,5 +55,11 @@ class User extends Model
                 $user->user_type = 'user';
             }
         });
+    }
+
+    // Relation avec les recettes favorites
+    public function favoriteRecipes()
+    {
+        return $this->belongsToMany(Recipe::class, 'favorite_recipes', 'user_id', 'recipe_id');
     }
 }
