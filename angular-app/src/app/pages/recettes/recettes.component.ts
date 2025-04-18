@@ -9,6 +9,7 @@ import { forkJoin, of } from 'rxjs';
 import { switchMap, catchError, tap } from 'rxjs/operators';
 import { HttpClient } from '@angular/common/http';
 import { RecetteService } from '../../services/recette.service';
+import { CocktailService } from '../../services/cocktail.service';
 
 @Component({
   selector: 'app-recettes',
@@ -32,11 +33,12 @@ export class RecettesComponent implements OnInit, OnDestroy {
   recettes: Recette[] = [];
 
   constructor(
-    private router: Router,
-    private scrollService: ScrollService,
-    private authService: AuthService,
-    private http: HttpClient,
-    private recetteService: RecetteService
+    private readonly router: Router,
+    private readonly scrollService: ScrollService,
+    private readonly authService: AuthService,
+    private readonly http: HttpClient,
+    private readonly recetteService: RecetteService,
+    private readonly cocktailService: CocktailService
   ) {}
 
   ngOnInit() {
@@ -112,7 +114,6 @@ export class RecettesComponent implements OnInit, OnDestroy {
 
   onSearchSubmit() {
     this.showSuggestions = false;
-    // Ici, vous pouvez ajouter la logique de navigation vers la page de résultats
     // this.router.navigate(['/resultats'], { queryParams: { q: this.searchTerm } });
   }
 

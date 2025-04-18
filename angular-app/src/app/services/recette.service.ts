@@ -145,7 +145,7 @@ export class RecetteService {
       else if (ingredientCount > 5) difficulty = 'Difficile';
 
       // Estimation du temps de préparation
-      let preparationTime = '5 min';
+      let preparationTime = '1 min';
       if (ingredientCount > 3) preparationTime = '10 min';
       if (ingredientCount > 5) preparationTime = '15 min';
 
@@ -158,7 +158,6 @@ export class RecetteService {
           'https://images.unsplash.com/photo-1551538827-9c037cb4f32a?w=800&auto=format&fit=crop&q=60',
         difficulty: difficulty,
         preparationTime: preparationTime,
-        isFavorite: false,
         ingredients: recipe.ingredients || [],
       };
     });
