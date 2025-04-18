@@ -43,10 +43,24 @@ export const routes: Routes = [
       ).then((m) => m.ConditionsUtilisationComponent),
   },
   {
+    path: 'mentions-legales',
+    loadComponent: () =>
+      import('./pages/mentions-legales/mentions-legales.component').then(
+        (m) => m.MentionsLegalesComponent
+      ),
+  },
+  {
     path: 'cocktail/:id',
     loadComponent: () =>
       import('./pages/cocktail-details/cocktail-details.component').then(
         (m) => m.CocktailDetailsComponent
+      ),
+  },
+  {
+    path: 'admin',
+    loadComponent: () =>
+      import('./pages/admin-dashboard/admin-dashboard.component').then(
+        (m) => m.AdminDashboardComponent
       ),
   },
   { path: '**', redirectTo: '' },

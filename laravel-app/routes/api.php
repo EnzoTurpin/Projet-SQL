@@ -96,6 +96,11 @@ Route::get('/categories/{id}', [CategoryController::class, 'show']);
 // Route de test pour les recettes (accessible sans authentification)
 Route::get('/test-recipes', [RecipeController::class, 'testRecipes']);
 
+Route::middleware('auth:sanctum')->get('/auth/check', function () {
+    return response()->json(['authenticated' => true, 'user' => Auth::user()]);
+});
+
+
 // Routes protégées par auth:sanctum
 Route::middleware('auth:sanctum')->group(function () {
 

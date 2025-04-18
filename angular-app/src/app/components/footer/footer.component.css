@@ -1,0 +1,135 @@
+/* Variables de couleurs */
+:root {
+  --tropical-vibes-color: #ff9a56;
+  --tropical-vibes-dark: #e67e35;
+}
+
+/* Styles de base du footer */
+footer {
+  font-family: "Poppins", sans-serif;
+}
+
+.footer {
+  background: linear-gradient(to right, #2c6e31, #4caf50);
+  color: white;
+}
+
+.footer-logo {
+  font-weight: bold;
+  font-size: 1.5rem;
+}
+
+.footer h3 {
+  font-weight: bold;
+  margin-bottom: 1rem;
+  position: relative;
+}
+
+.footer h3::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -8px;
+  width: 50px;
+  height: 2px;
+  background-color: #ffa500;
+}
+
+.footer-link {
+  transition: all 0.3s ease;
+}
+
+.footer-link:hover {
+  color: #ffa500;
+  transform: translateX(5px);
+}
+
+.social-icon {
+  transition: all 0.3s ease;
+}
+
+.social-icon:hover {
+  transform: scale(1.2);
+  fill: #ffa500;
+}
+
+@media (max-width: 768px) {
+  .footer-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .footer-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Styles spécifiques au footer */
+.text-tropical-vibes {
+  color: var(--tropical-vibes-color);
+}
+
+/* Animation pour les liens au survol */
+.transition {
+  transition: all 0.3s ease;
+}
+
+/* Optimisation pour les appareils mobiles */
+@media (max-width: 768px) {
+  footer {
+    text-align: center;
+  }
+
+  .space-x-4 {
+    justify-content: center;
+  }
+}
+
+/* Footer specific styles */
+.text-tropical-vibes-dark {
+  color: var(--tropical-vibes-dark);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .space-x-4 a {
+    margin-bottom: 0.5rem;
+    display: inline-block;
+  }
+}
+
+/* Animations pour les liens et icônes */
+.transition-colors {
+  transition: color 0.3s ease;
+}
+
+svg {
+  transition: transform 0.3s ease, fill 0.3s ease;
+}
+
+a:hover svg {
+  transform: scale(1.1);
+}
+
+/* Styles responsifs */
+@media (max-width: 768px) {
+  .space-y-2 {
+    margin-bottom: 1rem;
+  }
+
+  h3 {
+    margin-top: 1.5rem;
+  }
+}
+
+/* Amélioration de l'accessibilité */
+a:focus {
+  outline: 2px solid var(--tropical-vibes-color);
+  outline-offset: 2px;
+}
+
+/* Utilitaires supplémentaires */
+.bg-color-blanc-custom {
+  background-color: #fcfcfc;
+}

@@ -1,5 +1,5 @@
 // Sélectionner ou créer la base de données des cocktails
-use("cocktail-api");
+use("projectynov");
 
 // Insérer des cocktails dans la collection 'recipes'
 db.getCollection("recipes").insertMany([

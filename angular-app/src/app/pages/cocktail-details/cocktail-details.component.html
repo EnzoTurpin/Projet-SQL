@@ -24,7 +24,44 @@
       </button>
     </div>
 
-    <div *ngIf="cocktail" class="space-y-8">
+    <!-- Indicateur de chargement -->
+    <div *ngIf="isLoading" class="text-center py-12">
+      <div class="animate-pulse flex flex-col items-center">
+        <div
+          class="w-24 h-24 bg-tropical-vibes/30 rounded-full flex items-center justify-center mb-4"
+        >
+          <svg
+            class="w-12 h-12 text-tropical-vibes animate-spin"
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+          >
+            <circle
+              class="opacity-25"
+              cx="12"
+              cy="12"
+              r="10"
+              stroke="currentColor"
+              stroke-width="4"
+            ></circle>
+            <path
+              class="opacity-75"
+              fill="currentColor"
+              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+            ></path>
+          </svg>
+        </div>
+        <h2 class="text-2xl font-semibold text-tropical-vibes mb-2">
+          Chargement du cocktail...
+        </h2>
+        <p class="text-gray-600">
+          Veuillez patienter pendant que nous préparons votre cocktail
+        </p>
+      </div>
+    </div>
+
+    <!-- Contenu du cocktail -->
+    <div *ngIf="cocktail && !isLoading" class="space-y-8">
       <!-- En-tête avec image et informations principales -->
       <div class="flex flex-col md:flex-row gap-8">
         <div class="md:w-1/2 relative">
@@ -137,7 +174,8 @@
       </div>
     </div>
 
-    <div *ngIf="!cocktail" class="text-center py-12">
+    <!-- Message d'erreur -->
+    <div *ngIf="!cocktail && !isLoading" class="text-center py-12">
       <h2 class="text-2xl font-semibold text-tropical-vibes mb-4">
         Cocktail non trouvé
       </h2>
