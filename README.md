@@ -143,7 +143,6 @@ SESSION_DOMAIN=localhost
 - Frontend : http://localhost:4200
 - Backend : http://localhost:8000
 
-
 ## Fonctionnalités
 
 - **Exploration de cocktails** : Découvrez une vaste collection de recettes de cocktails.
@@ -168,8 +167,6 @@ L'API REST fournit des endpoints pour :
 - `GET /api/ingredients` : Liste tous les ingrédients.
 - `GET /api/ingredients/{id}` : Détails d'un ingrédient spécifique.
 
-
-
 ## Authentification
 
 L'application utilise Laravel Sanctum pour l'authentification par cookies. Les points d'entrée sont :
@@ -185,10 +182,5 @@ L'authentification est gérée via des cookies de session et CSRF, ce qui néces
 
 ## Contributeurs
 
-- [Hénan Noël](https://github.com/HenanAeroo)
 - [Enzo Turpin](https://github.com/EnzoTurpin)
-- [Tyfenn Le Dévéhat](https://github.com/tyfld)
-
-## Licence
-
-Ce projet est sous licence MIT.
+- [Daryl Matro](Darylmatro)
