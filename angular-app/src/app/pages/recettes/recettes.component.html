@@ -119,37 +119,30 @@
         </div>
         <!-- Bouton favori -->
         <button
-          class="absolute top-3 right-3 focus:outline-none"
           (click)="toggleFavorite(recette); $event.stopPropagation()"
+          class="absolute top-4 right-4 z-10 w-10 h-10 flex items-center justify-center rounded-full transition-all duration-300 transform hover:scale-110"
+          [ngClass]="{
+            'bg-red-500 text-white shadow-lg': isFavorite(recette),
+            'bg-white/80 text-gray-400 backdrop-blur-sm hover:bg-gray-100':
+              !isFavorite(recette)
+          }"
+          title="{{
+            isFavorite(recette) ? 'Retirer des favoris' : 'Ajouter aux favoris'
+          }}"
         >
-          <!-- Icône pleine si favori -->
           <svg
-            *ngIf="isFavorite(recette)"
             xmlns="http://www.w3.org/2000/svg"
+            class="h-6 w-6"
             viewBox="0 0 24 24"
-            fill="currentColor"
-            class="w-6 h-6 text-red-500"
-          >
-            <path
-              fill-rule="evenodd"
-              d="M12.1 4.435c1.73-1.82 4.532-1.82 6.263 0 1.73 1.82 1.73 4.77 0 6.59l-6.364 6.694a.75.75 0 01-1.1 0L5.535 11.025c-1.73-1.82-1.73-4.77 0-6.59 1.731-1.82 4.533-1.82 6.263 0l.302.317.302-.317z"
-              clip-rule="evenodd"
-            />
-          </svg>
-          <!-- Icône contour si non favori -->
-          <svg
-            *ngIf="!isFavorite(recette)"
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke-width="1.5"
-            stroke="currentColor"
-            class="w-6 h-6 text-gray-400 hover:text-red-400"
+            [ngClass]="{
+              'fill-current': isFavorite(recette),
+              'stroke-current fill-none stroke-2': !isFavorite(recette)
+            }"
           >
             <path
               stroke-linecap="round"
               stroke-linejoin="round"
-              d="M16.5 3.75c-1.936 0-3.678.924-4.5 2.344A5.248 5.248 0 007.5 3.75C4.462 3.75 2 6.173 2 9.19c0 2.21.889 3.728 2.293 5.235L12 21.25l7.707-6.825C21.111 12.918 22 11.4 22 9.19c0-3.018-2.462-5.44-5.5-5.44z"
+              d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
             />
           </svg>
         </button>

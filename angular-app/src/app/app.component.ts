@@ -1,5 +1,5 @@
 // src/app/app.component.ts
-import { Component, OnInit, HostListener } from '@angular/core';
+import { Component, OnInit, HostListener, Renderer2 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterOutlet, Router, NavigationEnd } from '@angular/router';
 import { NavbarComponent } from './components/navbar/navbar.component';
@@ -15,8 +15,9 @@ import { filter } from 'rxjs/operators';
 })
 export class AppComponent implements OnInit {
   title = 'CocktailRecipes';
+  hideFooter = false;
 
-  constructor(private router: Router) {}
+  constructor(private router: Router, private renderer: Renderer2) {}
 
   ngOnInit() {
     // Force la réapplication des classes responsives après le chargement complet
@@ -30,8 +31,22 @@ export class AppComponent implements OnInit {
     // Remonter en haut de la page à chaque changement de route
     this.router.events
       .pipe(filter((event) => event instanceof NavigationEnd))
-      .subscribe(() => {
+      .subscribe((event: any) => {
         window.scrollTo(0, 0);
+
+        // Vérifier si on est sur la page login ou register
+        const currentUrl = event.urlAfterRedirects;
+        this.hideFooter =
+          currentUrl.includes('/login') || currentUrl.includes('/register');
+
+        // Empêcher ou permettre le défilement selon la page
+        if (this.hideFooter) {
+          // Sur les pages login/register: bloquer le défilement
+          this.renderer.setStyle(document.body, 'overflow', 'hidden');
+        } else {
+          // Sur les autres pages: permettre le défilement
+          this.renderer.removeStyle(document.body, 'overflow');
+        }
       });
   }
 
