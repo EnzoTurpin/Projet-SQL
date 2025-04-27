@@ -132,9 +132,11 @@ export class RecetteService {
       }
 
       // Création d'une description à partir des instructions
-      const description = recipe.instructions
-        ? recipe.instructions.substring(0, 100) + '...'
-        : 'Pas de description disponible';
+      const description = Array.isArray(recipe.instructions)
+        ? recipe.instructions.join(' ').substring(0, 100) + '...' // Si instructions est un tableau, on les joint en une seule chaîne
+        : typeof recipe.instructions === 'string' && recipe.instructions // Si c'est déjà une chaîne, utilise-la
+        ? recipe.instructions.substring(0, 100) + '...' // Applique substring sur la chaîne
+        : 'Pas de description disponible'; // Si instructions n'est ni un tableau ni une chaîne, message par défaut
 
       // Détermination de la difficulté
       const ingredientCount = recipe.ingredients

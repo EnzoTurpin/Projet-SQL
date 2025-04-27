@@ -106,15 +106,11 @@ export class CocktailDetailsComponent implements OnInit, AfterViewInit {
           const instructions =
             typeof recipe.instructions === 'string'
               ? recipe.instructions
-                  .split('\n')
-                  .filter((line: string) => line.trim()).length > 0
-                ? recipe.instructions
-                    .split('\n')
-                    .filter((line: string) => line.trim())
-                : [recipe.instructions]
+                  .split('\n') // Divise en lignes
+                  .filter((line: string) => line.trim()) // Filtre les lignes vides
               : Array.isArray(recipe.instructions)
               ? recipe.instructions
-              : [];
+              : []; // Si instructions est un tableau, on le garde tel quel
 
           const id = recipe._id?.['$oid'] || recipe._id || recipe.id || '';
 

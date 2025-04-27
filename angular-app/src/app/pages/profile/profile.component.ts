@@ -94,14 +94,26 @@ export class ProfileComponent implements OnInit {
         this.favoriteRecipes = favorites.map((fav: any) => {
           const recipe = fav.recipe || fav; // parfois l'API emballe la recette dans fav.recipe
 
+          // Vérification de `instructions` pour éviter l'erreur de `substring`
+          let description = 'Aucune description disponible';
+          if (recipe.instructions) {
+            if (typeof recipe.instructions === 'string') {
+              // Si `instructions` est une chaîne, appliquer substring
+              description = recipe.instructions.substring(0, 100) + '...';
+            } else if (Array.isArray(recipe.instructions)) {
+              // Si `instructions` est un tableau, joindre les éléments en une chaîne
+              description =
+                recipe.instructions.join(' ').substring(0, 100) + '...';
+            }
+          } else if (recipe.description) {
+            // Si `instructions` n'existe pas, mais qu'il y a une description, l'utiliser
+            description = recipe.description;
+          }
+
           return {
             id: fav.recipe_id || fav._id || recipe.id,
             name: recipe.name || 'Sans nom',
-            description:
-              recipe.description ||
-              (recipe.instructions
-                ? recipe.instructions.substring(0, 100) + '...'
-                : 'Aucune description disponible'),
+            description: description,
             image: recipe.image || recipe.image_url || recipe.thumbnail || null,
             difficulty: this.getDifficulty(recipe) as
               | 'Facile'
