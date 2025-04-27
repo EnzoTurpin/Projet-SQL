@@ -143,4 +143,9 @@ Route::middleware(['web','auth:sanctum'])->group(function () {
     Route::put('/categories', [CategoryController::class, 'update']);
     Route::delete('/categories/{id}', [CategoryController::class, 'destroy']);
     Route::post('/categories/{id}/ban', [CategoryController::class, 'ban']);
+
+    // Gestion favoris
+    Route::get('/favorites', [FavoriteRecipeController::class, 'index']);
+    Route::post('/favorites/{recipeId}', [FavoriteRecipeController::class, 'store']);
+    Route::delete('/favorites/{recipeId}', [FavoriteRecipeController::class, 'destroy']);
 });

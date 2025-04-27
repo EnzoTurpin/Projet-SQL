@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable, of, throwError } from 'rxjs';
+import { Observable, of, throwError, BehaviorSubject } from 'rxjs';
 import { catchError, map, switchMap, tap } from 'rxjs/operators';
 import { AuthService } from './auth.service';
 
@@ -20,7 +20,13 @@ export class FavoriteService {
     withCredentials: true, // Important pour les cookies de session
   };
 
+  private favoriteIds$ = new BehaviorSubject<Set<string>>(new Set());
+
   constructor(private http: HttpClient, private authService: AuthService) {}
+
+  get favoriteIdsObservable() {
+    return this.favoriteIds$.asObservable();
+  }
 
   /**
    * Obtient un nouveau CSRF token avant de faire une requête
@@ -63,8 +69,12 @@ export class FavoriteService {
             }),
             map((response) => {
               if (response.status === 'success') {
-                console.log('Favoris récupérés avec succès:', response.data);
-                return response.data || [];
+                const list = response.data || [];
+                this.favoriteIds$.next(
+                  new Set(list.map((r: any) => r._id || r.id))
+                );
+                console.log('Favoris récupérés avec succès:', list);
+                return list;
               } else {
                 console.error('Erreur status dans la réponse:', response);
                 throw new Error(
@@ -93,81 +103,94 @@ export class FavoriteService {
   toggleFavorite(recipeId: string): Observable<any> {
     return this.getCSRFToken().pipe(
       switchMap(() => {
-        return this.http
-          .post<any>(
-            `${this.apiUrl}/favorites/${recipeId}`,
-            {},
-            this.httpOptions
-          )
-          .pipe(
-            map((response) => {
-              if (response.status === 'success') {
-                return response.data;
+        // Détermine si on ajoute (POST) ou supprime (DELETE)
+        const method$ = this.favoriteIds$.value.has(recipeId)
+          ? this.http.delete<any>(
+              `${this.apiUrl}/favorites/${recipeId}`,
+              this.httpOptions
+            )
+          : this.http.post<any>(
+              `${this.apiUrl}/favorites/${recipeId}`,
+              {},
+              this.httpOptions
+            );
+
+        return method$.pipe(
+          map((response) => {
+            if (response.status === 'success') {
+              const ids = new Set(this.favoriteIds$.value);
+              if (ids.has(recipeId)) {
+                ids.delete(recipeId);
               } else {
-                throw new Error(
-                  response.message || 'Erreur lors de la modification du favori'
-                );
+                ids.add(recipeId);
               }
-            }),
-            catchError((error) => {
-              console.error('Erreur lors de la modification du favori:', error);
+              this.favoriteIds$.next(ids);
+              return response.data;
+            } else {
+              throw new Error(
+                response.message || 'Erreur lors de la modification du favori'
+              );
+            }
+          }),
+          catchError((error) => {
+            console.error('Erreur lors de la modification du favori:', error);
 
-              // Si erreur 401 (non authentifié), tenter de rafraîchir la session
-              if (error.status === 401) {
-                console.log('Tentative de rafraîchir la session...');
+            // Si erreur 401 (non authentifié), tenter de rafraîchir la session
+            if (error.status === 401) {
+              console.log('Tentative de rafraîchir la session...');
 
-                // Appeler le endpoint de diagnostic pour rafraîchir la session
-                return this.http
-                  .get(`${this.apiUrl}/auth-diagnostic`, this.httpOptions)
-                  .pipe(
-                    switchMap(() => {
-                      console.log(
-                        'Session rafraîchie, nouvelle tentative de toggle favori'
-                      );
-                      // Réessayer après rafraîchissement de la session
-                      return this.http
-                        .post<any>(
-                          `${this.apiUrl}/favorites/${recipeId}`,
-                          {},
-                          this.httpOptions
-                        )
-                        .pipe(
-                          map((response) => {
-                            if (response.status === 'success') {
-                              console.log(
-                                'Toggle favori réussi après rafraîchissement'
-                              );
-                              return response.data;
-                            } else {
-                              throw new Error(
-                                response.message ||
-                                  'Erreur après rafraîchissement'
-                              );
-                            }
-                          }),
-                          catchError((finalError) => {
-                            console.error(
-                              'Échec définitif du toggle favori:',
-                              finalError
+              // Appeler le endpoint de diagnostic pour rafraîchir la session
+              return this.http
+                .get(`${this.apiUrl}/auth-diagnostic`, this.httpOptions)
+                .pipe(
+                  switchMap(() => {
+                    console.log(
+                      'Session rafraîchie, nouvelle tentative de toggle favori'
+                    );
+                    // Réessayer après rafraîchissement de la session
+                    return this.http
+                      .post<any>(
+                        `${this.apiUrl}/favorites/${recipeId}`,
+                        {},
+                        this.httpOptions
+                      )
+                      .pipe(
+                        map((response) => {
+                          if (response.status === 'success') {
+                            console.log(
+                              'Toggle favori réussi après rafraîchissement'
                             );
-                            return throwError(() => finalError);
-                          })
-                        );
-                    }),
-                    catchError((refreshError) => {
-                      console.error(
-                        'Échec du rafraîchissement de session:',
-                        refreshError
+                            return response.data;
+                          } else {
+                            throw new Error(
+                              response.message ||
+                                'Erreur après rafraîchissement'
+                            );
+                          }
+                        }),
+                        catchError((finalError) => {
+                          console.error(
+                            'Échec définitif du toggle favori:',
+                            finalError
+                          );
+                          return throwError(() => finalError);
+                        })
                       );
-                      return throwError(() => error); // Retourne l'erreur originale
-                    })
-                  );
-              }
+                  }),
+                  catchError((refreshError) => {
+                    console.error(
+                      'Échec du rafraîchissement de session:',
+                      refreshError
+                    );
+                    return throwError(() => error); // Retourne l'erreur originale
+                  })
+                );
+            }
 
-              // Pour les autres types d'erreurs
-              return throwError(() => error);
-            })
-          );
+            // Pour les autres types d'erreurs
+            return throwError(() => error);
+          })
+        );
       })
     );
   }

@@ -20,10 +20,10 @@ import { BehaviorSubject, Observable, of, timer, throwError } from 'rxjs';
 export class AuthService {
   private apiUrl = '/api';
   private csrfUrl = '/sanctum/csrf-cookie';
-  public currentUser: any = null;
+  public currentUser: any = this.getStoredUser();
 
   // Créer un BehaviorSubject pour partager l'état de l'utilisateur
-  private userSubject = new BehaviorSubject<any>(null);
+  private userSubject = new BehaviorSubject<any>(this.currentUser);
   public user$: Observable<any> = this.userSubject.asObservable();
 
   // Options HTTP par défaut pour toutes les requêtes
@@ -390,20 +390,15 @@ export class AuthService {
                 })
               )
             ),
-            tap((response) => {
-              if (response && response.data && response.data.user) {
-                console.log(
-                  'Utilisateur récupéré avec succès:',
-                  response.data.user
-                );
-                this.currentUser = response.data.user;
-                localStorage.setItem(
-                  'user',
-                  JSON.stringify(response.data.user)
-                );
-                this.userSubject.next(response.data.user);
+            tap((resp) => {
+              const user = (resp as any)?.data?.user || resp;
+              if (user && user.name) {
+                console.log('Utilisateur récupéré avec succès:', user);
+                this.currentUser = user;
+                localStorage.setItem('user', JSON.stringify(user));
+                this.userSubject.next(user);
               } else {
-                console.log('Réponse /me sans utilisateur:', response);
+                console.log('Réponse /me sans utilisateur:', resp);
               }
             }),
             catchError((error) => {
@@ -636,16 +631,18 @@ export class AuthService {
           .set('Pragma', 'no-cache'),
       })
       .pipe(
-        tap((user) => {
-          if (user) {
+        tap((resp) => {
+          const user = (resp as any)?.data?.user || resp;
+          if (user && user.name) {
             console.log(
               'Authentification serveur confirmée, utilisateur valide:',
               user
             );
-            // Mettre à jour l'utilisateur localement
             this.currentUser = user;
             localStorage.setItem('user', JSON.stringify(user));
             this.userSubject.next(user);
+          } else {
+            console.warn('Réponse inattendue pour /me:', resp);
           }
         }),
         catchError((error) => {

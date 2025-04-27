@@ -117,6 +117,42 @@
             </div>
           </div>
         </div>
+        <!-- Bouton favori -->
+        <button
+          class="absolute top-3 right-3 focus:outline-none"
+          (click)="toggleFavorite(recette); $event.stopPropagation()"
+        >
+          <!-- Icône pleine si favori -->
+          <svg
+            *ngIf="isFavorite(recette)"
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            fill="currentColor"
+            class="w-6 h-6 text-red-500"
+          >
+            <path
+              fill-rule="evenodd"
+              d="M12.1 4.435c1.73-1.82 4.532-1.82 6.263 0 1.73 1.82 1.73 4.77 0 6.59l-6.364 6.694a.75.75 0 01-1.1 0L5.535 11.025c-1.73-1.82-1.73-4.77 0-6.59 1.731-1.82 4.533-1.82 6.263 0l.302.317.302-.317z"
+              clip-rule="evenodd"
+            />
+          </svg>
+          <!-- Icône contour si non favori -->
+          <svg
+            *ngIf="!isFavorite(recette)"
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke-width="1.5"
+            stroke="currentColor"
+            class="w-6 h-6 text-gray-400 hover:text-red-400"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="M16.5 3.75c-1.936 0-3.678.924-4.5 2.344A5.248 5.248 0 007.5 3.75C4.462 3.75 2 6.173 2 9.19c0 2.21.889 3.728 2.293 5.235L12 21.25l7.707-6.825C21.111 12.918 22 11.4 22 9.19c0-3.018-2.462-5.44-5.5-5.44z"
+            />
+          </svg>
+        </button>
       </div>
     </div>
   </div>

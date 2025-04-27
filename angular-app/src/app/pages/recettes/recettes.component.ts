@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { ScrollService } from '../../services/scroll.service';
 import { AuthService } from '../../services/auth.service';
+import { FavoriteService } from '../../services/favorite.service';
 import { Recette } from '../../interfaces/recette.interface';
 import { forkJoin, of } from 'rxjs';
 import { switchMap, catchError, tap } from 'rxjs/operators';
@@ -31,6 +32,8 @@ export class RecettesComponent implements OnInit, OnDestroy {
   sessionExpiredError: boolean = false;
 
   recettes: Recette[] = [];
+  favoriteIds: Set<string> = new Set<string>();
+  defaultImage = 'https://dummyimage.com/400x300/eeeeee/aaa?text=Cocktail';
 
   constructor(
     private readonly router: Router,
@@ -38,7 +41,8 @@ export class RecettesComponent implements OnInit, OnDestroy {
     private readonly authService: AuthService,
     private readonly http: HttpClient,
     private readonly recetteService: RecetteService,
-    private readonly cocktailService: CocktailService
+    private readonly cocktailService: CocktailService,
+    private readonly favoriteService: FavoriteService
   ) {}
 
   ngOnInit() {
@@ -83,6 +87,15 @@ export class RecettesComponent implements OnInit, OnDestroy {
               "État d'authentification serveur:",
               this.isAuthenticatedOnServer ? 'Authentifié' : 'Non authentifié'
             );
+
+            // Si l'utilisateur est authentifié, charger ses favoris
+            if (this.isAuthenticatedOnServer) {
+              this.favoriteService.getFavorites().subscribe((favList) => {
+                this.favoriteIds = new Set(
+                  favList.map((fav: any) => fav._id || fav.id)
+                );
+              });
+            }
           });
       }
     });
@@ -137,5 +150,24 @@ export class RecettesComponent implements OnInit, OnDestroy {
           .toLowerCase()
           .includes(this.searchTerm.toLowerCase())
     );
+  }
+
+  /* =========  Gestion des favoris  ========== */
+  isFavorite(recette: Recette): boolean {
+    return this.favoriteIds.has((recette as any)._id || recette.id);
+  }
+
+  toggleFavorite(recette: Recette): void {
+    const id = (recette as any)._id || recette.id;
+    this.favoriteService.toggleFavorite(id).subscribe({
+      next: () => {
+        if (this.favoriteIds.has(id)) {
+          this.favoriteIds.delete(id);
+        } else {
+          this.favoriteIds.add(id);
+        }
+      },
+      error: (err) => console.error('Erreur toggle fav', err),
+    });
   }
 }

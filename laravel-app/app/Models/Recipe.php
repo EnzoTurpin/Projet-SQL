@@ -40,5 +40,11 @@ class Recipe extends Model
     {
         return $this->belongsTo(Glass::class, 'glass_id', '_id');
     }
+
+    // Relation avec les utilisateurs qui ont mis la recette en favoris
+    public function favoredByUsers()
+    {
+        return $this->belongsToMany(User::class, 'favorite_recipes', 'recipe_id', 'user_id');
+    }
 }
 

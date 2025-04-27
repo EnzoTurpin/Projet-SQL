@@ -68,7 +68,7 @@
               <div
                 class="w-full h-full flex items-center justify-center text-white text-5xl font-bold"
               >
-                {{ user?.name.charAt(0).toUpperCase() }}
+                {{ user?.name?.charAt(0) | uppercase }}
               </div>
             </div>
           </div>
@@ -184,7 +184,7 @@
                   class="cursor-pointer"
                 >
                   <img
-                    [src]="recipe.image"
+                    [src]="recipe.image ? recipe.image : defaultImage"
                     [alt]="recipe.name"
                     class="w-full h-40 object-cover"
                   />

@@ -30,6 +30,8 @@ export class ProfileComponent implements OnInit {
   showPasswordConfirmation = false;
   favoriteRecipes: Recette[] = [];
   loadingFavorites = false;
+  defaultImage =
+    'https://images.unsplash.com/photo-1551538827-9c037cb4f32a?w=800&auto=format&fit=crop&q=60';
 
   // Helper methods for password validation
   hasLowerCase(password: string | undefined): boolean {
@@ -88,21 +90,27 @@ export class ProfileComponent implements OnInit {
     this.favoriteService.getFavorites().subscribe(
       (favorites: any[]) => {
         this.loadingFavorites = false;
-        // Les favoris sont maintenant directement un tableau
-        this.favoriteRecipes = favorites.map((fav: any) => ({
-          id: fav.recipe_id || fav._id,
-          name: fav.recipe?.name || 'Sans nom',
-          description: fav.recipe?.instructions
-            ? fav.recipe.instructions.substring(0, 100) + '...'
-            : 'Aucune description disponible',
-          image: fav.recipe?.image || 'https://via.placeholder.com/150',
-          difficulty: this.getDifficulty(fav.recipe) as
-            | 'Facile'
-            | 'Moyen'
-            | 'Difficile',
-          preparationTime: this.getPreparationTime(fav.recipe),
-          isFavorite: true,
-        }));
+        // Adapter aux structures possibles de réponse
+        this.favoriteRecipes = favorites.map((fav: any) => {
+          const recipe = fav.recipe || fav; // parfois l'API emballe la recette dans fav.recipe
+
+          return {
+            id: fav.recipe_id || fav._id || recipe.id,
+            name: recipe.name || 'Sans nom',
+            description:
+              recipe.description ||
+              (recipe.instructions
+                ? recipe.instructions.substring(0, 100) + '...'
+                : 'Aucune description disponible'),
+            image: recipe.image || recipe.image_url || recipe.thumbnail || null,
+            difficulty: this.getDifficulty(recipe) as
+              | 'Facile'
+              | 'Moyen'
+              | 'Difficile',
+            preparationTime: this.getPreparationTime(recipe),
+            isFavorite: true,
+          };
+        });
       },
       (error) => {
         this.loadingFavorites = false;
