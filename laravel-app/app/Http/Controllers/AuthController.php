@@ -24,6 +24,9 @@ class AuthController extends Controller
             return ResponseApi::sendApiResponse('fail', 'Identifiants invalides.', null, 401);
         }
 
+        // Regenerate session to prevent fixation and ensure cookie is set
+        $request->session()->regenerate();
+
         $user = Auth::user();
 
         return ResponseApi::sendApiResponse('success', 'Connexion réussie.', ['user' => $user], 200);
@@ -34,7 +37,12 @@ class AuthController extends Controller
      */
     public function logout(Request $request)
     {
-        Auth::logout();
+        // Déconnexion côté session (guard "web")
+        Auth::guard('web')->logout();
+
+        // On invalide la session existante et on régénère le jeton CSRF
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
 
         return ResponseApi::sendApiResponse('success', 'Déconnexion réussie.', null, 200);
     }

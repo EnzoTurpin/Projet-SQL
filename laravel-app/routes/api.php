@@ -17,7 +17,7 @@ Route::get('/auth/check', [AuthController::class, 'check']);
 
 // Routes publiques
 Route::post('/register', [UserController::class, 'store']);
-Route::post('/login', [AuthController::class, 'login']);
+Route::post('/login', [AuthController::class, 'login'])->middleware('web');
 
 // Route de diagnostic pour vérifier l'état de la session
 Route::get('/session-debug', function (Request $request) {
@@ -102,7 +102,7 @@ Route::middleware('auth:sanctum')->get('/auth/check', function () {
 
 
 // Routes protégées par auth:sanctum
-Route::middleware('auth:sanctum')->group(function () {
+Route::middleware(['web','auth:sanctum'])->group(function () {
 
     // Authentification
     Route::get('/me', [UserController::class, 'show']);
@@ -111,7 +111,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/api/me', [UserController::class, 'show']);
     
     Route::put('/me', [UserController::class, 'update']);
-    Route::post('/logout', [AuthController::class, 'logout']);
+    Route::post('/logout', [AuthController::class, 'logout'])->middleware('web');
 
 
     // Gestion utilisateurs
