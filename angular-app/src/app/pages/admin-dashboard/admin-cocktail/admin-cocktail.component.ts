@@ -68,9 +68,9 @@ export class AdminCocktailComponent implements OnInit {
 
   // Charger les catégories pour la liste déroulante
   loadCategories(): void {
-    this.cocktailService.getFilters().subscribe({
-      next: (filters) => {
-        this.categories = filters.categories;
+    this.cocktailService.getCategories().subscribe({
+      next: (categories) => {
+        this.categories = categories;
         // Tri alphabétique des catégories
         this.categories.sort((a, b) => a.name.localeCompare(b.name));
         console.log('Catégories chargées:', this.categories);
@@ -235,87 +235,132 @@ export class AdminCocktailComponent implements OnInit {
     });
   }
 
+  // Gérer la soumission du formulaire
   onSubmit(): void {
     this.formSubmitted = true;
 
     if (this.cocktailForm.invalid) {
+      console.error('Formulaire invalide:', this.cocktailForm.errors);
       this.statusMessage = 'Veuillez corriger les erreurs dans le formulaire.';
       this.isSuccess = false;
       return;
     }
 
-    if (!this.selectedFile && !this.isEditing) {
-      this.statusMessage = 'Une image est requise pour le cocktail.';
+    this.isLoading = true;
+    const rawFormData = this.cocktailForm.value;
+
+    // Convertir le temps de préparation en nombre
+    const preparationTime = parseInt(rawFormData.preparationTime, 10);
+    if (isNaN(preparationTime)) {
+      this.statusMessage = 'Le temps de préparation doit être un nombre.';
       this.isSuccess = false;
+      this.isLoading = false;
       return;
     }
 
-    // Préparer les données
-    const formData = new FormData();
-    const rawFormData = this.cocktailForm.value;
+    if (this.isEditing) {
+      console.log('Mode édition');
+      if (this.selectedFile) {
+        // Si une nouvelle image est téléchargée, utiliser FormData
+        const formData = new FormData();
+        formData.append('name', rawFormData.name);
+        formData.append('description', rawFormData.description);
+        formData.append('difficulty', rawFormData.difficulty);
+        formData.append('preparationTime', preparationTime.toString());
 
-    // Ajouter automatiquement "min" au temps de préparation s'il n'y est pas déjà
-    let preparationTime = rawFormData.preparationTime;
-    if (preparationTime && !preparationTime.toString().includes('min')) {
-      preparationTime = `${preparationTime} min`;
-    }
+        if (rawFormData.glassType)
+          formData.append('glassType', rawFormData.glassType);
+        if (rawFormData.alcoholLevel)
+          formData.append('alcoholLevel', rawFormData.alcoholLevel);
+        if (rawFormData.garnish)
+          formData.append('garnish', rawFormData.garnish);
 
-    // Ajouter les champs texte
-    formData.append('name', rawFormData.name);
-    formData.append('description', rawFormData.description);
-    formData.append('difficulty', rawFormData.difficulty);
-    formData.append('preparationTime', preparationTime);
-    formData.append('glassType', rawFormData.glassType);
-    formData.append('alcoholLevel', rawFormData.alcoholLevel);
-    formData.append('garnish', rawFormData.garnish);
-    formData.append('category_id', rawFormData.category_id); // Utilise category_id au lieu de isMocktail
+        formData.append('category_id', rawFormData.category_id);
 
-    // Ajouter l'image si elle existe
-    if (this.selectedFile) {
-      formData.append('image', this.selectedFile);
-    }
+        // Ajouter la nouvelle image
+        formData.append('image', this.selectedFile);
 
-    // Convertir les tableaux en JSON pour le serveur
-    formData.append('ingredients', JSON.stringify(rawFormData.ingredients));
-    formData.append(
-      'instructions',
-      JSON.stringify(rawFormData.instructions.map((i: any) => i.step))
-    );
+        // Convertir les tableaux en JSON strings pour FormData
+        formData.append('ingredients', JSON.stringify(rawFormData.ingredients));
+        formData.append(
+          'instructions',
+          JSON.stringify(rawFormData.instructions.map((i: any) => i.step))
+        );
 
-    this.isLoading = true;
+        this.updateCocktail(formData);
+      } else {
+        // Pas de nouvelle image: n'incluons pas le champ image dans la requête
+        const updateData = {
+          _id: this.currentCocktailId,
+          name: rawFormData.name,
+          description: rawFormData.description,
+          difficulty: rawFormData.difficulty,
+          preparationTime: preparationTime,
+          glassType: rawFormData.glassType || '',
+          alcoholLevel: rawFormData.alcoholLevel || '',
+          garnish: rawFormData.garnish || '',
+          category_id: rawFormData.category_id,
+          // Formater correctement les ingrédients et instructions
+          ingredients: rawFormData.ingredients.map((ingredient: any) => ({
+            name: ingredient.name,
+            quantity: ingredient.quantity,
+            unit: ingredient.unit || '',
+          })),
+          instructions: rawFormData.instructions.map((i: any) => i.step),
+          isMocktail: this.isMocktail(rawFormData.category_id)
+            ? 'true'
+            : 'false',
+        };
 
-    if (this.isEditing && this.currentCocktailId) {
-      // Mise à jour d'un cocktail existant
-      this.cocktailService
-        .updateCocktail(this.currentCocktailId, formData)
-        .subscribe({
-          next: () => {
-            this.handleSuccess('Cocktail mis à jour avec succès !');
-          },
-          error: (error) => {
-            this.handleError(
-              'Erreur lors de la mise à jour du cocktail',
-              error
-            );
-          },
-        });
+        this.updateCocktail(updateData);
+      }
     } else {
-      // Création d'un nouveau cocktail
-      this.cocktailService.createCocktail(formData).subscribe({
-        next: () => {
-          this.handleSuccess('Cocktail créé avec succès !');
-        },
-        error: (error) => {
-          this.handleError('Erreur lors de la création du cocktail', error);
-        },
-      });
+      console.log('Mode création');
+      // En mode création, on utilise toujours FormData car une image est obligatoire
+      const formData = new FormData();
+      formData.append('name', rawFormData.name);
+      formData.append('description', rawFormData.description);
+      formData.append('difficulty', rawFormData.difficulty);
+      formData.append('preparationTime', preparationTime.toString());
+
+      if (rawFormData.glassType)
+        formData.append('glassType', rawFormData.glassType);
+      if (rawFormData.alcoholLevel)
+        formData.append('alcoholLevel', rawFormData.alcoholLevel);
+      if (rawFormData.garnish) formData.append('garnish', rawFormData.garnish);
+
+      formData.append('category_id', rawFormData.category_id);
+
+      // Ajouter l'image
+      if (this.selectedFile) {
+        formData.append('image', this.selectedFile);
+      }
+
+      // Convertir les tableaux en JSON strings pour FormData
+      formData.append('ingredients', JSON.stringify(rawFormData.ingredients));
+      formData.append(
+        'instructions',
+        JSON.stringify(rawFormData.instructions.map((i: any) => i.step))
+      );
+
+      this.createCocktail(formData);
     }
   }
 
   editCocktail(cocktail: Recette): void {
+    console.log('Édition cocktail:', cocktail);
+    console.log('ID du cocktail:', cocktail.id);
+    console.log('_ID du cocktail:', cocktail._id);
+    console.log('Toutes les propriétés:', Object.keys(cocktail));
+
     this.isEditing = true;
-    this.currentCocktailId = cocktail.id;
-    this.resetForm();
+    this.currentCocktailId = cocktail._id || cocktail.id; // Utiliser _id en priorité
+    console.log('ID utilisé pour la mise à jour:', this.currentCocktailId);
+
+    // Ne pas appeler resetForm() car cela réinitialiserait isEditing à false
+    // Effacer les anciens messages
+    this.formSubmitted = false;
+    this.statusMessage = '';
 
     // Configurer l'aperçu de l'image
     this.imagePreview = cocktail.image;
@@ -430,15 +475,41 @@ export class AdminCocktailComponent implements OnInit {
 
   private handleSuccess(message: string): void {
     this.loadCocktails();
-    this.resetForm();
+    // Ne réinitialiser le formulaire que si nous ne sommes pas en mode édition
+    // ou si le message indique une création réussie
+    if (!this.isEditing || message.includes('créé')) {
+      this.resetForm();
+    } else {
+      // En mode édition, ne pas réinitialiser le formulaire, juste mettre à jour le statut
+      this.isLoading = false;
+    }
     this.statusMessage = message;
     this.isSuccess = true;
-    this.isLoading = false;
   }
 
   private handleError(message: string, error: any): void {
     console.error(message, error);
     this.statusMessage = message;
+
+    // Ajouter plus de détails d'erreur si disponibles
+    if (error && error.error && error.error.data) {
+      let errorDetails = '';
+      const errorData = error.error.data;
+
+      // Parcourir les champs d'erreur et ajouter à notre message
+      Object.keys(errorData).forEach((field) => {
+        if (Array.isArray(errorData[field])) {
+          errorData[field].forEach((msg: string) => {
+            errorDetails += `\n- ${msg}`;
+          });
+        }
+      });
+
+      if (errorDetails) {
+        this.statusMessage += ` Détails: ${errorDetails}`;
+      }
+    }
+
     this.isSuccess = false;
     this.isLoading = false;
   }
@@ -462,5 +533,121 @@ export class AdminCocktailComponent implements OnInit {
 
     const category = this.categories.find((c) => c._id === categoryId);
     return category?.name?.toLowerCase() === 'mocktail';
+  }
+
+  private updateCocktail(cocktailData: any): void {
+    console.log('Mise à jour cocktail avec ID:', this.currentCocktailId);
+    console.log('Données envoyées:', cocktailData);
+
+    // Vérifier la présence de la catégorie
+    if (cocktailData instanceof FormData) {
+      // Vérifier si category_id est présent et défini
+      const categoryId = cocktailData.get('category_id');
+      console.log('Category ID dans FormData:', categoryId);
+
+      if (!categoryId || categoryId === 'undefined' || categoryId === 'null') {
+        console.error('Category ID manquant ou invalide');
+        // Si on a la liste des catégories, on peut prendre la première par défaut
+        if (this.categories && this.categories.length > 0) {
+          const defaultCategory = this.categories[0]._id;
+          console.log(
+            'Utilisation de la catégorie par défaut:',
+            defaultCategory
+          );
+          // S'assurer que defaultCategory est une chaîne de caractères
+          if (defaultCategory) {
+            cocktailData.set('category_id', defaultCategory.toString());
+          }
+        } else {
+          this.handleError(
+            'Erreur: Catégorie manquante ou invalide',
+            new Error('Category ID missing')
+          );
+          return;
+        }
+      }
+
+      // Ajouter un log détaillé du contenu final du FormData
+      console.log('Contenu final du FormData avant envoi:');
+      cocktailData.forEach((value, key) => {
+        console.log(`${key}: ${value}`);
+      });
+    } else {
+      // Vérifier si category_id est présent et défini
+      if (
+        !cocktailData.category_id ||
+        cocktailData.category_id === 'undefined'
+      ) {
+        console.error("Category ID manquant ou invalide dans l'objet JSON");
+        // Si on a la liste des catégories, on peut prendre la première par défaut
+        if (this.categories && this.categories.length > 0) {
+          cocktailData.category_id = this.categories[0]._id;
+          console.log(
+            'Utilisation de la catégorie par défaut:',
+            cocktailData.category_id
+          );
+        } else {
+          this.handleError(
+            'Erreur: Catégorie manquante ou invalide',
+            new Error('Category ID missing')
+          );
+          return;
+        }
+      }
+    }
+
+    // Si les données ne sont pas déjà un FormData, assurons-nous que ingredients et instructions sont correctement formatés
+    if (!(cocktailData instanceof FormData)) {
+      // S'assurer que les tableaux sont des tableaux JavaScript réguliers
+      if (cocktailData.ingredients && Array.isArray(cocktailData.ingredients)) {
+        // Laisser tel quel, sera converti en JSON string dans le service
+      }
+
+      if (
+        cocktailData.instructions &&
+        Array.isArray(cocktailData.instructions)
+      ) {
+        // Extraire seulement les étapes si ce n'est pas déjà fait
+        if (
+          cocktailData.instructions.length > 0 &&
+          typeof cocktailData.instructions[0] === 'object'
+        ) {
+          cocktailData.instructions = cocktailData.instructions.map(
+            (i: any) => i.step
+          );
+        }
+      }
+    }
+
+    this.isLoading = true;
+    this.cocktailService
+      .updateCocktail(this.currentCocktailId!, cocktailData)
+      .subscribe({
+        next: (response) => {
+          console.log('Réponse de mise à jour:', response);
+          this.handleSuccess('Cocktail mis à jour avec succès.');
+        },
+        error: (error) => {
+          console.error('Erreur complète:', error);
+          this.handleError('Erreur lors de la mise à jour du cocktail.', error);
+        },
+      });
+  }
+
+  private createCocktail(formData: FormData): void {
+    console.log("Création d'un nouveau cocktail");
+    console.log('Données envoyées:', formData);
+
+    this.isLoading = true;
+    this.cocktailService.createCocktail(formData).subscribe({
+      next: (response) => {
+        console.log('Réponse de création:', response);
+        this.handleSuccess('Cocktail créé avec succès.');
+      },
+      error: (error) => {
+        console.error('Erreur complète:', error);
+        this.handleError('Erreur lors de la création du cocktail.', error);
+      },
+    });
   }
 }

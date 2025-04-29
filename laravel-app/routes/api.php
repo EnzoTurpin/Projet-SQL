@@ -139,7 +139,7 @@ Route::middleware(['web','auth:sanctum'])->group(function () {
 
     // Gestion recettes
     Route::post('/recipes', [RecipeController::class, 'store']);
-    Route::put('/recipes', [RecipeController::class, 'update']);
+    Route::put('/recipes/{id}', [RecipeController::class, 'update']);
     Route::delete('/recipes/{id}', [RecipeController::class, 'destroy']);
     Route::post('/recipes/{id}/ban', [RecipeController::class, 'ban']);
 
@@ -162,7 +162,7 @@ Route::middleware(['web','auth:sanctum'])->group(function () {
 
     // Gestion catégories
     Route::post('/categories', [CategoryController::class, 'store']);
-    Route::put('/categories', [CategoryController::class, 'update']);
+    Route::put('/categories/{id}', [CategoryController::class, 'update']);
     Route::delete('/categories/{id}', [CategoryController::class, 'destroy']);
     Route::post('/categories/{id}/ban', [CategoryController::class, 'ban']);
 

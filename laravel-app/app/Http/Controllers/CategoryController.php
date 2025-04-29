@@ -11,43 +11,47 @@ use Illuminate\Support\Facades\Validator;
 class CategoryController extends Controller
 {
     public function index()
-{
-    return response()->json(Category::all()); // Ou Glass::all(), Ingredient::all()
-}
+    {
+        return response()->json(Category::all()); // Ou Glass::all(), Ingredient::all()
+    }
 
-    public function create(Request $request){
+    protected function validator(Request $request)
+    {
         return Validator::make($request->all(), [
             'name' => 'required|string|max:255',
-            'isMocktail' => 'boolean',
+            'isMocktail' => 'required|boolean',
         ], [
             'name.required' => 'Le champ nom est obligatoire.',
+            'isMocktail.required' => 'Le champ isMocktail est obligatoire.',
+            'isMocktail.boolean' => 'Le champ isMocktail doit être un booléen.',
         ]);
     }
 
     public function store(Request $request)
     {
-        $validator = $this->create($request);
+        $validator = $this->validator($request);
 
-        // Si la validation échoue, on renvoie les erreurs
         if ($validator->fails()) {
             return ResponseApi::sendApiResponse('fail', 'Certains champs sont manquants ou invalides.', $validator->errors(), 422);
         }
 
         $category = Category::create($validator->validated());
 
-        return ResponseApi::sendApiResponse('success', 'Ingrédient créé avec succès !', $category, 0);
+        return ResponseApi::sendApiResponse('success', 'Catégorie créée avec succès !', $category, 0);
     }
 
-    public function show($id){
+    public function show($id)
+    {
         try {
             $category = Category::where('_id', $id)->firstOrFail();
             return response()->json($category);
         } catch (\Exception $e) {
-            return ResponseApi::sendApiResponse('fail', 'Verre non trouvé', null, 404);
+            return ResponseApi::sendApiResponse('fail', 'Catégorie non trouvée', null, 404);
         }
     }
 
-    public function update(Request $request, $id) {
+    public function update(Request $request, $id)
+    {
         $user = Auth::user();
 
         // Vérification de la connexion de l'utilisateur
@@ -56,41 +60,38 @@ class CategoryController extends Controller
         }
 
         $category = Category::findOrFail($id);
-        $validator = $this->create($request);
+        $validator = $this->validator($request);
     
         // Si la validation échoue, on renvoie les erreurs
         if ($validator->fails()) {
             return ResponseApi::sendApiResponse('fail', 'Certains champs sont manquants ou invalides.', $validator->errors(), 422);
         }
 
-        // Mise à jour des données de l'ingrédient
+        // Mise à jour des données de la catégorie
         $category->name = $validator->validated()['name'];
-        if (isset($validator->validated()['isMocktail'])) {
-            $category->isMocktail = $validator->validated()['isMocktail'];
-        }
+        $category->isMocktail = $validator->validated()['isMocktail'];
 
         $category->save();
 
-        return ResponseApi::sendApiResponse('success', 'Ingrédient mis à jour avec succès.', $category, 0);
+        return ResponseApi::sendApiResponse('success', 'Catégorie mise à jour avec succès.', $category, 0);
     }
 
-    public function destroy($id) {
+    public function destroy($id)
+    {
         // Vérification que l'utilisateur est connecté
         if (!Auth::check()) {
-            return ResponseApi::sendApiResponse('fail', 'Vous devez être connecté pour supprimer un ingrédient', null, 404);
+            return ResponseApi::sendApiResponse('fail', 'Vous devez être connecté pour supprimer une catégorie', null, 404);
         }
 
         $category = Category::findOrFail($id);
 
-        // Si l'utilisateur n'est pas un administrateur, vérifie qu'il est le propriétaire de l'ingrédient
+        // Si l'utilisateur n'est pas un administrateur, vérifie qu'il est le propriétaire de la catégorie
         if (Auth::id() !== $category->user_id && Auth::user()->user_type !== 'admin') {
-            return ResponseApi::sendApiResponse('fail', 'Vous ne pouvez pas supprimer un ingrédient que vous ne possédez pas', null, 403);
+            return ResponseApi::sendApiResponse('fail', 'Vous ne pouvez pas supprimer une catégorie que vous ne possédez pas', null, 403);
         } else {
             $category->delete();
 
-            return ResponseApi::sendApiResponse('success', 'Ingrédient supprimé avec succès.', null, 0);
+            return ResponseApi::sendApiResponse('success', 'Catégorie supprimée avec succès.', null, 0);
         }
     }
-
-    
 }

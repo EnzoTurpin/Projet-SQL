@@ -12,9 +12,9 @@ use App\Models\Category;
 class GlassController extends Controller
 {
     public function index()
-{
-    return response()->json(Category::all()); // Ou Glass::all(), Ingredient::all()
-}
+    {
+        return response()->json(Glass::all());
+    }
 
     public function create(Request $request){
         return Validator::make($request->all(), [

@@ -2,17 +2,17 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Models\Recipe;
-use App\Models\Category;
-use App\Models\Ingredient;
-use App\Models\Glass;
+use Illuminate\Http\Request;
 use App\Scripts\ResponseApi;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use App\Models\Category;
+use App\Models\Ingredient;
+use App\Models\Glass;
 
 class RecipeController extends Controller
 {
@@ -161,14 +161,30 @@ class RecipeController extends Controller
     public function update(Request $request, $id) {
         $user = Auth::user();
 
+        // Logs ultra détaillés pour débugger
+        Log::info('===== DÉBUT MISE À JOUR COCKTAIL =====');
+        Log::info('ID reçu pour mise à jour:', ['id' => $id, 'type' => gettype($id)]);
+        
         // Vérification de la connexion de l'utilisateur
         if (!$user) {
+            Log::error('Utilisateur non authentifié');
             return ResponseApi::sendApiResponse('fail', 'Vous devez être connecté pour effectuer cette action.', [], 401);
         }
 
+        // Rechercher l'ancienne recette
         try {
+            // Utiliser uniquement findOrFail ici
             $recipe = Recipe::findOrFail($id);
+            
+            Log::info('Recette existante trouvée', [
+                'recipe_id' => $recipe->id,
+                'recipe_name' => $recipe->name
+            ]);
         } catch (\Exception $e) {
+            Log::error('Recette non trouvée', [
+                'id' => $id,
+                'error' => $e->getMessage()
+            ]);
             return ResponseApi::sendApiResponse('fail', 'Cocktail non trouvé', null, 404);
         }
 
@@ -203,6 +219,10 @@ class RecipeController extends Controller
         ]);
 
         if ($validator->fails()) {
+            Log::error('Validation échouée pour mise à jour', [
+                'recipe_id' => $id,
+                'errors' => $validator->errors()->toArray()
+            ]);
             return ResponseApi::sendApiResponse('fail', 'Certains champs sont manquants ou invalides.', $validator->errors(), 422);
         }
 
@@ -245,9 +265,36 @@ class RecipeController extends Controller
         }
 
         // Mettre à jour les données du cocktail
-        $recipe->update($validatedData);
-
-        return ResponseApi::sendApiResponse('success', 'Cocktail mis à jour avec succès.', $recipe, 200);
+        try {
+            // SOLUTION RADICALE : Supprimer et recréer avec le même ID
+            // 1. D'abord forcer l'ID pour qu'il corresponde à l'ancien ID mongoDB
+            $validatedData['_id'] = $recipe->_id ?? $id;
+            
+            // 2. Supprimer l'ancienne recette
+            $recipe->delete();
+            
+            // 3. Recréer avec les mêmes IDs
+            $newRecipe = Recipe::create($validatedData);
+            
+            Log::info('Recette mise à jour par suppression/recréation', [
+                'old_id' => $id,
+                'new_id' => $newRecipe->id,
+                'new__id' => $newRecipe->_id,
+                'name' => $newRecipe->name
+            ]);
+            
+            Log::info('===== FIN MISE À JOUR COCKTAIL =====');
+            
+            return ResponseApi::sendApiResponse('success', 'Cocktail mis à jour avec succès.', $newRecipe, 200);
+        } catch (\Exception $e) {
+            Log::error('Erreur lors de la mise à jour de la recette', [
+                'recipe_id' => $id,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            Log::info('===== FIN MISE À JOUR COCKTAIL (ERREUR) =====');
+            return ResponseApi::sendApiResponse('fail', 'Erreur lors de la mise à jour du cocktail', ['error' => $e->getMessage()], 500);
+        }
     }
 
     public function destroy($id) {

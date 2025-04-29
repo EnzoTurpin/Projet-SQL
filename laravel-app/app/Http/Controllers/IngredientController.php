@@ -13,9 +13,9 @@ use App\Models\Category;
 class IngredientController extends Controller
 {
     public function index()
-{
-    return response()->json(Category::all()); // Ou Glass::all(), Ingredient::all()
-}
+    {
+        return response()->json(Ingredient::all());
+    }
 
     protected function create(Request $request) {
         // Validation des données de l'ingrédient

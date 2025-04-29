@@ -1,5 +1,6 @@
 export interface Recette {
   id: string;
+  _id?: string; // ID MongoDB
   name: string;
   description: string;
   image: string;
