@@ -7,14 +7,14 @@ use Illuminate\Http\Request;
 use App\Scripts\ResponseApi;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
+use App\Models\Category;
 
 class GlassController extends Controller
 {
-    public function index() {
-        $recipe = Glass::all();
-        
-        return response()->json($recipe);
-    }
+    public function index()
+{
+    return response()->json(Category::all()); // Ou Glass::all(), Ingredient::all()
+}
 
     public function create(Request $request){
         return Validator::make($request->all(), [
@@ -89,4 +89,6 @@ class GlassController extends Controller
             return ResponseApi::sendApiResponse('success', 'Ingrédient supprimé avec succès.', null, 0);
         }
     }
+
+    
 }

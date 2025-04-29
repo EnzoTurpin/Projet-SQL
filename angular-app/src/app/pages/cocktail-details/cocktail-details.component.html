@@ -66,7 +66,7 @@
       <div class="flex flex-col md:flex-row gap-8">
         <div class="md:w-1/2 relative">
           <img
-            [src]="cocktail.image"
+            [src]="getImageUrl(cocktail.image)"
             [alt]="cocktail.name"
             class="w-full h-96 object-cover rounded-lg shadow-lg"
           />
@@ -74,6 +74,16 @@
         <div class="md:w-1/2 space-y-4">
           <h1 class="text-3xl font-bold text-tropical-vibes">
             {{ cocktail.name }}
+            <span
+              class="inline-block ml-2 text-sm px-3 py-1 rounded-full"
+              [ngClass]="
+                cocktail.isMocktail
+                  ? 'bg-green-100 text-green-800'
+                  : 'bg-blue-100 text-blue-800'
+              "
+            >
+              {{ cocktail.isMocktail ? "Mocktail" : "Cocktail" }}
+            </span>
           </h1>
           <p class="text-gray-600">{{ cocktail.description }}</p>
 
@@ -121,7 +131,7 @@
             <div class="bg-white p-4 rounded-lg shadow">
               <p class="text-sm text-gray-500">Type de verre</p>
               <p class="font-semibold text-tropical-vibes">
-                {{ cocktail.glassType }}
+                {{ cocktail.glassType || "Non spécifié" }}
               </p>
             </div>
           </div>
@@ -133,17 +143,28 @@
         <h2 class="text-2xl font-semibold text-tropical-vibes mb-4">
           Ingrédients
         </h2>
-        <ul class="space-y-2">
+
+        <ul
+          class="space-y-2"
+          *ngIf="cocktail.ingredients && cocktail.ingredients.length > 0"
+        >
           <li
             *ngFor="let ingredient of cocktail.ingredients"
             class="flex justify-between items-center"
           >
             <span class="text-gray-700">{{ ingredient.name }}</span>
-            <span class="text-tropical-vibes font-medium">{{
-              ingredient.amount
-            }}</span>
+            <span class="text-tropical-vibes font-medium">
+              {{ ingredient.quantity || "" }}
+              {{ ingredient.unit || "" }}
+            </span>
           </li>
         </ul>
+        <p
+          *ngIf="!cocktail.ingredients || cocktail.ingredients.length === 0"
+          class="text-gray-500 italic"
+        >
+          Aucun ingrédient spécifié
+        </p>
       </div>
 
       <!-- Instructions -->
@@ -170,7 +191,12 @@
         <h2 class="text-2xl font-semibold text-tropical-vibes mb-4">
           Garniture
         </h2>
-        <p class="text-gray-700">{{ cocktail.garnish }}</p>
+        <p class="text-gray-700" *ngIf="cocktail.garnish">
+          {{ cocktail.garnish }}
+        </p>
+        <p *ngIf="!cocktail.garnish" class="text-gray-500 italic">
+          Aucune garniture spécifiée
+        </p>
       </div>
     </div>
 

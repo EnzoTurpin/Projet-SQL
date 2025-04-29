@@ -94,6 +94,16 @@ export class AuthService {
   refreshCsrfToken(): Observable<any> {
     console.log('Tentative de récupération du CSRF token...');
 
+    // Vérifier si nous avons déjà un cookie CSRF valide
+    const existingToken = this.getCsrfTokenFromCookie();
+    if (existingToken) {
+      console.log(
+        'Token CSRF déjà présent:',
+        existingToken.substring(0, 10) + '...'
+      );
+      return of(existingToken);
+    }
+
     // Utiliser XMLHttpRequest pour forcer le navigateur à accepter/stocker les cookies
     return new Observable((observer) => {
       const xhr = new XMLHttpRequest();
@@ -124,6 +134,10 @@ export class AuthService {
                 'CSRF token value (truncated):',
                 csrfCookie.substring(0, 10) + '...'
               );
+            } else {
+              console.warn(
+                'XSRF-TOKEN cookie was not set! This may cause login issues.'
+              );
             }
 
             // Log all cookies to debug
@@ -132,7 +146,7 @@ export class AuthService {
 
             observer.next();
             observer.complete();
-          }, 300); // Increased delay to ensure cookie processing
+          }, 500); // Increased delay to ensure cookie processing
         } else {
           console.error(`CSRF request failed with status: ${xhr.status}`);
           observer.error(`Failed to get CSRF token: ${xhr.statusText}`);
@@ -145,7 +159,8 @@ export class AuthService {
           "Erreur lors de l'obtention du CSRF token:",
           xhr.statusText
         );
-        observer.error(`Failed to get CSRF token: Network error`);
+        console.log('Trying to continue without CSRF token');
+        observer.next(); // Still continue to allow the login attempt
         observer.complete();
       };
 
@@ -190,11 +205,11 @@ export class AuthService {
     this.userSubject.next(null);
     localStorage.removeItem('user');
 
+    console.log('Tentative de connexion pour:', email);
+
     // Essayer de récupérer un token CSRF, mais continuer même si ça échoue
     return this.refreshCsrfToken().pipe(
       switchMap(() => {
-        console.log('Tentative de connexion pour:', email);
-
         // Log the CSRF token we're going to use for login
         const csrfToken = this.getCsrfTokenFromCookie();
         console.log(
@@ -216,6 +231,14 @@ export class AuthService {
           ? headers.set('X-XSRF-TOKEN', csrfToken)
           : headers;
 
+        console.log('Headers for login request:', {
+          'Content-Type': 'application/json',
+          'X-XSRF-TOKEN': csrfToken
+            ? csrfToken.substring(0, 10) + '...'
+            : 'None',
+          'X-Requested-With': 'XMLHttpRequest',
+        });
+
         return this.http
           .post<any>(
             `${this.apiUrl}/login`,
@@ -228,8 +251,28 @@ export class AuthService {
           .pipe(
             tap((response) => {
               if (response && response.status === 'success') {
-                console.log('Connexion réussie:', response.data.user);
-                this.currentUser = response.data.user;
+                console.log('Connexion réussie:', response.data?.user);
+                this.currentUser = response.data?.user;
+
+                // Vérifier si l'utilisateur est banni
+                if (this.currentUser?.banned) {
+                  console.log(
+                    'Utilisateur banni, redirection vers la page de bannissement'
+                  );
+                  localStorage.setItem(
+                    'user',
+                    JSON.stringify(this.currentUser)
+                  );
+                  this.userSubject.next(this.currentUser);
+
+                  // Rediriger vers la page de bannissement
+                  setTimeout(() => {
+                    this.router.navigate(['/banned']);
+                  }, 500);
+
+                  return;
+                }
+
                 localStorage.setItem('user', JSON.stringify(this.currentUser));
                 this.userSubject.next(this.currentUser);
 
@@ -242,40 +285,28 @@ export class AuthService {
                 }, 500);
               }
             }),
-            // Après connexion réussie, vérifier immédiatement que l'utilisateur est bien authentifié
-            switchMap((response) => {
-              if (response && response.status === 'success') {
-                // Délai plus long (1200ms) pour s'assurer que les cookies sont bien établis par le navigateur
-                return timer(1200).pipe(
-                  switchMap(() => {
-                    // Rafraîchir le cookie CSRF avant d'accéder aux endpoints protégés
-                    return this.refreshCsrfToken().pipe(
-                      switchMap(() => {
-                        // Log cookies after refreshing CSRF
-                        this.checkCookies();
-
-                        // Try to get user info directly
-                        return this.getUserWithRetry().pipe(
-                          catchError((error) => {
-                            console.error(
-                              'Erreur lors de la vérification post-login:',
-                              error
-                            );
-                            // Retourner la réponse originale même en cas d'erreur
-                            return of(response);
-                          })
-                        );
-                      })
-                    );
-                  })
-                );
-              }
-              return of(response);
-            }),
             catchError((error) => {
               console.error('Erreur de connexion:', error);
+
+              // Log plus détaillé pour aider au débogage
+              if (error.status === 401) {
+                console.error(
+                  'Erreur 401: Non autorisé. Vérifiez vos identifiants.'
+                );
+              } else if (error.status === 419) {
+                console.error('Erreur 419: CSRF token expiré ou invalide.');
+              } else if (error.status === 0) {
+                console.error(
+                  "Erreur de connexion réseau. Le serveur est-il en cours d'exécution?"
+                );
+              }
+
               return throwError(
-                () => new Error(error?.error?.message || 'Échec de connexion')
+                () =>
+                  new Error(
+                    error?.error?.message ||
+                      'Échec de connexion: ' + (error.status || 'erreur réseau')
+                  )
               );
             })
           );
@@ -675,44 +706,13 @@ export class AuthService {
   }
 
   getUser() {
-    return this.refreshCsrfToken().pipe(
-      switchMap(() => {
-        return this.http.get<any>(`${this.apiUrl}/me`, {
-          ...this.httpOptions,
-          withCredentials: true,
-          headers: this.httpOptions.headers
-            .set('Cache-Control', 'no-cache')
-            .set('Pragma', 'no-cache'),
-        });
-      }),
-      tap((user) => {
-        console.log('Utilisateur récupéré:', user);
-      }),
-      retry(1),
-      catchError((error) => {
-        console.error(
-          "Erreur lors de la récupération de l'utilisateur:",
-          error
-        );
-
-        // Tenter une solution alternative avec le diagnostic
-        if (error.status === 401) {
-          return this.http
-            .get(`${this.apiUrl}/auth-diagnostic`, {
-              ...this.httpOptions,
-              withCredentials: true,
-            })
-            .pipe(
-              tap((diagnosticData) => {
-                console.log('Authentication diagnostic:', diagnosticData);
-              }),
-              catchError(() => throwError(() => error))
-            );
-        }
-
-        return throwError(() => error);
-      })
-    );
+    return this.http.get<any>(`${this.apiUrl}/me`, {
+      ...this.httpOptions,
+      withCredentials: true,
+      headers: this.httpOptions.headers
+        .set('Cache-Control', 'no-cache')
+        .set('Pragma', 'no-cache'),
+    });
   }
 
   isAuthenticated(): boolean {

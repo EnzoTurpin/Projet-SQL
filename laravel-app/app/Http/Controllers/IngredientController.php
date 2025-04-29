@@ -7,19 +7,21 @@ use App\Scripts\ResponseApi;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
+use App\Models\Category;
+
 
 class IngredientController extends Controller
 {
-    public function index() {
-        $ingredients = Ingredient::all();
-        return response()->json($ingredients);
-    }
+    public function index()
+{
+    return response()->json(Category::all()); // Ou Glass::all(), Ingredient::all()
+}
 
     protected function create(Request $request) {
         // Validation des données de l'ingrédient
         return Validator::make($request->all(), [
             'name' => 'required|string|max:255',
-            'quantity' => 'string',
+            'quantity' => 'nullable|string',
         ], [
             'name.required' => 'Le champ nom est obligatoire.',
             'quantity.string' => 'La quantité doit être une chaîne de caractères.',
@@ -90,4 +92,6 @@ class IngredientController extends Controller
             return ResponseApi::sendApiResponse('success', 'Ingrédient supprimé avec succès.', null, 0);
         }
     }
+
+    
 }

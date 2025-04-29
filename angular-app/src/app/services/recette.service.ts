@@ -3,6 +3,7 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, of, catchError, tap } from 'rxjs';
 import { Recette } from '../interfaces/recette.interface';
 import { map, switchMap } from 'rxjs/operators';
+import { HttpParams } from '@angular/common/http';
 
 @Injectable({
   providedIn: 'root',
@@ -92,6 +93,35 @@ export class RecetteService {
     );
   }
 
+  filterRecipes(filters: {
+    category_id?: string;
+    glass_id?: string;
+    ingredient_ids?: string[];
+  }) {
+    let params = new HttpParams();
+    if (filters.category_id)
+      params = params.set('category_id', filters.category_id);
+    if (filters.glass_id) params = params.set('glass_id', filters.glass_id);
+    if (filters.ingredient_ids && filters.ingredient_ids.length > 0) {
+      params = params.set('ingredient_ids', filters.ingredient_ids.join(','));
+    }
+
+    return this.http.get(`${this.apiUrl}/recipes/filter`, { params });
+  }
+
+  /**get pour le filtre */
+  getCategories() {
+    return this.http.get<any[]>(`${this.apiUrl}/categories`);
+  }
+
+  getGlasses() {
+    return this.http.get<any[]>(`${this.apiUrl}/glasses`);
+  }
+
+  getIngredients() {
+    return this.http.get<any[]>(`${this.apiUrl}/ingredients`);
+  }
+
   /**
    * Détermine la difficulté d'une recette basée sur le nombre d'ingrédients
    */
@@ -131,8 +161,10 @@ export class RecetteService {
         id = recipe.id || `recette-${Math.random().toString(36).substr(2, 9)}`;
       }
 
-      // Création d'une description à partir des instructions
-      const description = Array.isArray(recipe.instructions)
+      // Utiliser la description existante si disponible, sinon créer à partir des instructions
+      const description = recipe.description
+        ? recipe.description
+        : Array.isArray(recipe.instructions)
         ? recipe.instructions.join(' ').substring(0, 100) + '...' // Si instructions est un tableau, on les joint en une seule chaîne
         : typeof recipe.instructions === 'string' && recipe.instructions // Si c'est déjà une chaîne, utilise-la
         ? recipe.instructions.substring(0, 100) + '...' // Applique substring sur la chaîne
@@ -161,6 +193,11 @@ export class RecetteService {
         difficulty: difficulty,
         preparationTime: preparationTime,
         ingredients: recipe.ingredients || [],
+        instructions: recipe.instructions || [],
+        glassType: recipe.glassType || '',
+        alcoholLevel: recipe.alcoholLevel || '',
+        garnish: recipe.garnish || '',
+        isMocktail: recipe.isMocktail === true,
       };
     });
   }

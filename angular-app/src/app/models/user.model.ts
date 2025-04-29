@@ -3,6 +3,7 @@ export interface User {
   name: string;
   email: string;
   user_type: string;
+  banned: boolean;
 }
 
 export interface GetUsersResponse {

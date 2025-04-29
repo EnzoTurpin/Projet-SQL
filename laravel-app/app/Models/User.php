@@ -24,6 +24,7 @@ class User extends Model implements AuthenticatableContract
         'email',
         'password',
         'user_type',
+        'banned',
     ];
 
     protected $hidden = [
@@ -36,6 +37,7 @@ class User extends Model implements AuthenticatableContract
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'banned' => 'boolean',
         ];
     }
 
@@ -53,6 +55,11 @@ class User extends Model implements AuthenticatableContract
         static::creating(function ($user) {
             if (!isset($user->user_type)) {
                 $user->user_type = 'user';
+            }
+
+            // Définir la valeur par défaut du champ "banned" à false si elle n'est pas définie
+            if (!isset($user->banned)) {
+                $user->banned = false;
             }
         });
     }

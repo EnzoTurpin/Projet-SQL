@@ -1,7 +1,8 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, of, catchError, tap, map, shareReplay } from 'rxjs';
 import { environment } from '../../environments/environment';
+import { Category, Glass, Ingredient } from '../interfaces/filters.interface';
 
 // Type pour les ingrédients
 interface CocktailIngredient {
@@ -84,6 +85,14 @@ export class CocktailService {
 
     return this.cache[`cocktail_${id}`];
   }
+  // filtes
+  getFilters() {
+    return this.http.get<{
+      categories: Category[];
+      glasses: Glass[];
+      ingredients: Ingredient[];
+    }>(`${this.apiUrl}/filters`);
+  }
 
   // Vider le cache pour un ID ou tous les cocktails
   clearCache(id?: string): void {
@@ -96,6 +105,7 @@ export class CocktailService {
 
   // Créer un nouveau cocktail (nécessite authentification)
   createCocktail(cocktailData: any): Observable<any> {
+    // Ne pas définir de Content-Type pour FormData, laissez le navigateur le faire
     return this.http.post<any>(`${this.apiUrl}/recipes`, cocktailData).pipe(
       tap(() => this.clearCache()) // Vider le cache après création
     );

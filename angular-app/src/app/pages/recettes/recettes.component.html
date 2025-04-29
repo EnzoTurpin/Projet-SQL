@@ -21,10 +21,11 @@
   </div>
 </section>
 
-<!-- Barre de recherche -->
+<!-- Barre de recherche et filtres -->
 <section class="py-12 bg-color-blanc-custom">
   <div class="container mx-auto px-4">
     <div class="max-w-2xl mx-auto relative">
+      <!-- Barre de recherche -->
       <div class="relative">
         <input
           type="text"
@@ -39,6 +40,108 @@
         >
           <i class="bx bx-search"></i> Rechercher
         </button>
+      </div>
+
+      <!-- Système de filtrage unifié avec Tailwind CSS -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
+        <!-- Catégorie -->
+        <div class="relative">
+          <select
+            [(ngModel)]="selectedCategory"
+            class="w-full appearance-none bg-white border border-gray-300 rounded-md py-2 px-4 pr-8 leading-tight focus:outline-none focus:ring-2 focus:ring-tropical-vibes focus:border-transparent"
+          >
+            <option value="">Toutes les catégories</option>
+            <option *ngFor="let cat of categories" [value]="cat.name">
+              {{ cat.name }}
+            </option>
+          </select>
+          <div
+            class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700"
+          >
+            <svg
+              class="fill-current h-4 w-4"
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 20 20"
+            >
+              <path
+                d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"
+              />
+            </svg>
+          </div>
+        </div>
+
+        <!-- Verre -->
+        <div class="relative">
+          <select
+            [(ngModel)]="selectedGlass"
+            class="w-full appearance-none bg-white border border-gray-300 rounded-md py-2 px-4 pr-8 leading-tight focus:outline-none focus:ring-2 focus:ring-tropical-vibes focus:border-transparent"
+          >
+            <option value="">Tous les verres</option>
+            <option *ngFor="let glass of glasses" [value]="glass.name">
+              {{ glass.name }}
+            </option>
+          </select>
+          <div
+            class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700"
+          >
+            <svg
+              class="fill-current h-4 w-4"
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 20 20"
+            >
+              <path
+                d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"
+              />
+            </svg>
+          </div>
+        </div>
+
+        <!-- Ingrédients (sélection améliorée) -->
+        <div class="flex flex-col">
+          <div class="relative">
+            <select
+              (change)="addIngredient($event)"
+              class="w-full appearance-none bg-white border border-gray-300 rounded-md py-2 px-4 pr-8 leading-tight focus:outline-none focus:ring-2 focus:ring-tropical-vibes focus:border-transparent"
+            >
+              <option value="">Tous les ingrédient</option>
+              <option
+                *ngFor="let ingredient of ingredients"
+                [value]="ingredient.name"
+              >
+                {{ ingredient.name }}
+              </option>
+            </select>
+            <div
+              class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700"
+            >
+              <svg
+                class="fill-current h-4 w-4"
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 20 20"
+              >
+                <path
+                  d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"
+                />
+              </svg>
+            </div>
+          </div>
+
+          <!-- Tags d'ingrédients sélectionnés -->
+          <div class="flex flex-wrap gap-2 mt-2 min-h-[38px]">
+            <span
+              *ngFor="let ing of selectedIngredients"
+              class="bg-tropical-vibes bg-opacity-10 text-tropical-vibes px-2 py-1 rounded-full text-sm flex items-center"
+            >
+              {{ ing }}
+              <button
+                (click)="removeIngredient(ing)"
+                class="ml-1 rounded-full hover:bg-tropical-vibes hover:bg-opacity-20 h-5 w-5 inline-flex items-center justify-center transition-colors"
+              >
+                ×
+              </button>
+            </span>
+          </div>
+        </div>
       </div>
 
       <!-- Suggestions de recherche -->
@@ -60,9 +163,21 @@
                 [alt]="recette.name"
               />
               <div class="overflow-hidden">
-                <div class="font-medium truncate">{{ recette.name }}</div>
+                <div class="font-medium truncate">
+                  {{ recette.name }}
+                  <span
+                    class="inline-block ml-1 text-xs px-1.5 py-0.5 rounded-full"
+                    [ngClass]="
+                      recette.isMocktail
+                        ? 'bg-green-100 text-green-800'
+                        : 'bg-blue-100 text-blue-800'
+                    "
+                  >
+                    {{ recette.isMocktail ? "Mocktail" : "Cocktail" }}
+                  </span>
+                </div>
                 <div class="text-sm text-gray-500 truncate">
-                  {{ recette.description }}
+                  {{ getRecetteDescription(recette) }}
                 </div>
               </div>
             </div>
@@ -97,8 +212,20 @@
           <div class="p-6">
             <h3 class="text-xl font-semibold text-tropical-vibes mb-2">
               {{ recette.name }}
+              <span
+                class="inline-block ml-2 text-xs px-2 py-0.5 rounded-full"
+                [ngClass]="
+                  recette.isMocktail
+                    ? 'bg-green-100 text-green-800'
+                    : 'bg-blue-100 text-blue-800'
+                "
+              >
+                {{ recette.isMocktail ? "Mocktail" : "Cocktail" }}
+              </span>
             </h3>
-            <p class="text-gray-600 mb-4">{{ recette.description }}</p>
+            <p class="text-gray-600 mb-4">
+              {{ getRecetteDescription(recette) }}
+            </p>
 
             <div class="flex items-center justify-between">
               <span

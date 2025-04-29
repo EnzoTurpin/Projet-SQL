@@ -5,6 +5,7 @@ import { RouterOutlet, Router, NavigationEnd } from '@angular/router';
 import { NavbarComponent } from './components/navbar/navbar.component';
 import { FooterComponent } from './components/footer/footer.component';
 import { filter } from 'rxjs/operators';
+import { AuthService } from './services/auth.service';
 
 @Component({
   selector: 'app-root',
@@ -16,10 +17,49 @@ import { filter } from 'rxjs/operators';
 export class AppComponent implements OnInit {
   title = 'CocktailRecipes';
   hideFooter = false;
+  isLoginOrRegisterPage = false;
+  mainContainer: HTMLElement | null = null;
 
-  constructor(private router: Router, private renderer: Renderer2) {}
+  constructor(
+    private router: Router,
+    private renderer: Renderer2,
+    private authService: AuthService
+  ) {}
 
-  ngOnInit() {
+  ngOnInit(): void {
+    // Obtenir la référence à l'élément HTML du conteneur principal
+    this.mainContainer = document.getElementById('main-container');
+
+    // Surveillance de la route pour adaptations
+    this.router.events.subscribe((event) => {
+      if (event instanceof NavigationEnd) {
+        // Déterminer s'il s'agit d'une page spéciale (login/register)
+        const currentUrl = event.urlAfterRedirects;
+        this.isLoginOrRegisterPage =
+          currentUrl.includes('/login') || currentUrl.includes('/register');
+
+        // Sur les pages login/register: bloquer le défilement
+        if (this.isLoginOrRegisterPage) {
+          document.body.style.overflow = 'hidden';
+        } else {
+          document.body.style.overflow = '';
+        }
+
+        // Vérifier si l'utilisateur est banni
+        const currentUser = this.authService.getStoredUser();
+        if (
+          currentUser &&
+          currentUser.banned &&
+          !currentUrl.includes('/banned')
+        ) {
+          console.log(
+            'Utilisateur banni détecté, redirection vers la page de bannissement'
+          );
+          this.router.navigate(['/banned']);
+        }
+      }
+    });
+
     // Force la réapplication des classes responsives après le chargement complet
     this.applyResponsiveClasses();
 
