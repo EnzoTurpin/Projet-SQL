@@ -170,4 +170,16 @@ export class RecettesComponent implements OnInit, OnDestroy {
       error: (err) => console.error('Erreur toggle fav', err),
     });
   }
+
+  // Retourne une description non vide ou un fallback
+  getRecetteDescription(recette: Recette): string {
+    if (recette.description && recette.description.trim()) {
+      return recette.description;
+    }
+
+    // Ne plus utiliser les instructions comme fallback
+    return `Délicieux cocktail à base de ${
+      recette.mainAlcohol || 'spiritueux'
+    }`;
+  }
 }

@@ -3,11 +3,14 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ScrollService } from '../../services/scroll.service';
 import { CocktailService } from '../../services/cocktail.service';
+import { environment } from '../../../environments/environment';
 import { finalize } from 'rxjs';
 
 interface Ingredient {
   name: string;
   amount: string;
+  quantity: string;
+  unit: string;
 }
 
 interface Cocktail {
@@ -22,6 +25,7 @@ interface Cocktail {
   difficulty: 'Facile' | 'Moyen' | 'Difficile';
   preparationTime: string;
   alcoholLevel: number;
+  isMocktail?: boolean;
 }
 
 interface ApiIngredient {
@@ -29,6 +33,7 @@ interface ApiIngredient {
   quantity?: string;
   name?: string;
   amount?: string;
+  unit?: string;
   [key: string]: any;
 }
 
@@ -42,6 +47,8 @@ interface ApiIngredient {
 export class CocktailDetailsComponent implements OnInit, AfterViewInit {
   cocktail: Cocktail | null = null;
   isLoading: boolean = true;
+  defaultImage =
+    'https://images.unsplash.com/photo-1551538827-9c037cb4f32a?w=800&auto=format&fit=crop&q=60';
 
   constructor(
     private route: ActivatedRoute,
@@ -66,6 +73,34 @@ export class CocktailDetailsComponent implements OnInit, AfterViewInit {
     this.scrollService.scrollToTopImmediate();
   }
 
+  /**
+   * Prépare une URL d'image complète à partir d'un chemin relatif ou d'une URL
+   */
+  getImageUrl(imagePath: string): string {
+    if (!imagePath) {
+      return this.defaultImage;
+    }
+
+    // Si c'est déjà une URL complète, on la renvoie telle quelle
+    if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
+      return imagePath;
+    }
+
+    // Vérifier si le chemin commence déjà par /storage/ (envoyé par le backend Laravel)
+    if (imagePath.includes('/storage/')) {
+      return imagePath;
+    }
+
+    // Pour les chemins relatifs commençant par 'images/cocktails/', remplacez par '/storage/images/cocktails/'
+    if (imagePath.startsWith('/images/cocktails/')) {
+      return `${environment.apiUrl}/storage${imagePath}`;
+    }
+
+    // Fallback: retourner l'image par défaut
+    console.warn("Format d'image non reconnu:", imagePath);
+    return this.defaultImage;
+  }
+
   loadCocktailDetails(id: string): void {
     this.cocktailService
       .getCocktailById(id)
@@ -74,32 +109,71 @@ export class CocktailDetailsComponent implements OnInit, AfterViewInit {
         next: (recipe) => {
           if (!recipe) return;
 
+          console.log('RECIPE DATA:', recipe);
+          console.log('RECIPE INGREDIENTS:', recipe.ingredients);
+          console.log(
+            'IS MOCKTAIL:',
+            recipe.isMocktail,
+            typeof recipe.isMocktail
+          );
+
           let mappedIngredients: Ingredient[] = [];
 
           if (recipe.ingredients && Array.isArray(recipe.ingredients)) {
-            mappedIngredients = recipe.ingredients
-              .map((ingredient: ApiIngredient) => {
-                if (ingredient.ingredient_id) {
-                  const name =
-                    typeof ingredient.ingredient_id === 'string'
-                      ? ingredient.ingredient_id
-                      : ingredient.ingredient_id?.name || 'Ingrédient inconnu';
-                  return {
-                    name,
-                    amount: ingredient.quantity || 'Non spécifié',
-                  };
-                } else if (ingredient.name && ingredient.amount) {
-                  return ingredient;
-                }
-                return null;
-              })
-              .filter(Boolean) as Ingredient[];
+            mappedIngredients = recipe.ingredients.map((ingredient: any) => {
+              console.log('PROCESSING INGREDIENT:', ingredient);
+
+              if (typeof ingredient === 'object' && ingredient.name) {
+                return {
+                  name: ingredient.name || 'Ingrédient inconnu',
+                  amount: `${ingredient.quantity || ''} ${
+                    ingredient.unit || ''
+                  }`.trim(),
+                  quantity: ingredient.quantity || '',
+                  unit: ingredient.unit || '',
+                };
+              } else if (
+                typeof ingredient === 'object' &&
+                ingredient.ingredient_id
+              ) {
+                const name =
+                  typeof ingredient.ingredient_id === 'string'
+                    ? ingredient.ingredient_id
+                    : ingredient.ingredient_id?.name || 'Ingrédient inconnu';
+
+                return {
+                  name: name,
+                  amount: `${ingredient.quantity || ''} ${
+                    ingredient.unit || ''
+                  }`.trim(),
+                  quantity: ingredient.quantity || '',
+                  unit: ingredient.unit || '',
+                };
+              } else if (typeof ingredient === 'string') {
+                return {
+                  name: ingredient,
+                  amount: 'Non spécifié',
+                  quantity: '',
+                  unit: '',
+                };
+              }
+              return {
+                name: 'Ingrédient inconnu',
+                amount: 'Non spécifié',
+                quantity: '',
+                unit: '',
+              };
+            });
           }
+
+          console.log('MAPPED INGREDIENTS:', mappedIngredients);
 
           if (mappedIngredients.length === 0 && recipe.mainAlcohol) {
             mappedIngredients.push({
               name: recipe.mainAlcohol,
               amount: 'Quantité à ajuster selon le goût',
+              quantity: '',
+              unit: '',
             });
           }
 
@@ -128,9 +202,7 @@ export class CocktailDetailsComponent implements OnInit, AfterViewInit {
           this.cocktail = {
             id,
             name: recipe.name,
-            image:
-              recipe.image ||
-              'https://images.unsplash.com/photo-1551538827-9c037cb4f32a?w=800&auto=format&fit=crop&q=60',
+            image: recipe.image || this.defaultImage,
             description:
               recipe.description ||
               `Délicieux cocktail à base de ${
@@ -139,17 +211,18 @@ export class CocktailDetailsComponent implements OnInit, AfterViewInit {
             ingredients: mappedIngredients,
             instructions,
             glassType:
-              recipe.glass?.name || recipe.glass_id || 'Verre classique',
+              recipe.glassType || recipe.glass?.name || recipe.glass_id || '',
             garnish:
-              typeof recipe.garnish === 'string'
+              typeof recipe.garnish === 'string' && recipe.garnish
                 ? recipe.garnish
-                : recipe.garnish?.name || 'Garniture non trouvé',
+                : recipe.garnish?.name || '',
             difficulty:
               recipe.difficulty || (recipe.mainAlcohol ? 'Facile' : 'Moyen'),
             preparationTime:
               recipe.preparationTime ||
               this.formatPreparationTime(recipe.quantity),
             alcoholLevel,
+            isMocktail: recipe.isMocktail,
           };
         },
         error: () => {

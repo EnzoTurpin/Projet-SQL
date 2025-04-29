@@ -5,6 +5,7 @@ import { Observable } from 'rxjs';
 interface ApiResponse {
   data?: {
     users?: any[];
+    user?: any;
     [key: string]: any;
   };
   status?: string;
@@ -25,7 +26,8 @@ export class UserService {
   }
 
   banUser(id: string): Observable<ApiResponse> {
-    return this.http.patch<ApiResponse>(`${this.apiUrl}/users/${id}/ban`, {});
+    // L'API attend une requête POST sur /users/{id}/ban
+    return this.http.post<ApiResponse>(`${this.apiUrl}/users/${id}/ban`, {});
   }
 
   deleteUser(id: string): Observable<ApiResponse> {

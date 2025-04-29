@@ -60,9 +60,21 @@
                 [alt]="recette.name"
               />
               <div class="overflow-hidden">
-                <div class="font-medium truncate">{{ recette.name }}</div>
+                <div class="font-medium truncate">
+                  {{ recette.name }}
+                  <span
+                    class="inline-block ml-1 text-xs px-1.5 py-0.5 rounded-full"
+                    [ngClass]="
+                      recette.isMocktail
+                        ? 'bg-green-100 text-green-800'
+                        : 'bg-blue-100 text-blue-800'
+                    "
+                  >
+                    {{ recette.isMocktail ? "Mocktail" : "Cocktail" }}
+                  </span>
+                </div>
                 <div class="text-sm text-gray-500 truncate">
-                  {{ recette.description }}
+                  {{ getRecetteDescription(recette) }}
                 </div>
               </div>
             </div>
@@ -97,8 +109,20 @@
           <div class="p-6">
             <h3 class="text-xl font-semibold text-tropical-vibes mb-2">
               {{ recette.name }}
+              <span
+                class="inline-block ml-2 text-xs px-2 py-0.5 rounded-full"
+                [ngClass]="
+                  recette.isMocktail
+                    ? 'bg-green-100 text-green-800'
+                    : 'bg-blue-100 text-blue-800'
+                "
+              >
+                {{ recette.isMocktail ? "Mocktail" : "Cocktail" }}
+              </span>
             </h3>
-            <p class="text-gray-600 mb-4">{{ recette.description }}</p>
+            <p class="text-gray-600 mb-4">
+              {{ getRecetteDescription(recette) }}
+            </p>
 
             <div class="flex items-center justify-between">
               <span

@@ -131,8 +131,10 @@ export class RecetteService {
         id = recipe.id || `recette-${Math.random().toString(36).substr(2, 9)}`;
       }
 
-      // Création d'une description à partir des instructions
-      const description = Array.isArray(recipe.instructions)
+      // Utiliser la description existante si disponible, sinon créer à partir des instructions
+      const description = recipe.description
+        ? recipe.description
+        : Array.isArray(recipe.instructions)
         ? recipe.instructions.join(' ').substring(0, 100) + '...' // Si instructions est un tableau, on les joint en une seule chaîne
         : typeof recipe.instructions === 'string' && recipe.instructions // Si c'est déjà une chaîne, utilise-la
         ? recipe.instructions.substring(0, 100) + '...' // Applique substring sur la chaîne
@@ -161,6 +163,11 @@ export class RecetteService {
         difficulty: difficulty,
         preparationTime: preparationTime,
         ingredients: recipe.ingredients || [],
+        instructions: recipe.instructions || [],
+        glassType: recipe.glassType || '',
+        alcoholLevel: recipe.alcoholLevel || '',
+        garnish: recipe.garnish || '',
+        isMocktail: recipe.isMocktail === true,
       };
     });
   }

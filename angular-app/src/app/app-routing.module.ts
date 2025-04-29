@@ -1,15 +1,19 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { HomeComponent } from './pages/home/home.component';
+import { authGuard } from './guards/auth.guard';
+import { AdminGuard } from './guards/admin.guard';
+import { bannedGuard } from './guards/banned.guard';
 
 export const routes: Routes = [
-  { path: '', component: HomeComponent },
+  { path: '', component: HomeComponent, canActivate: [bannedGuard] },
   {
     path: 'recettes',
     loadComponent: () =>
       import('./pages/recettes/recettes.component').then(
         (m) => m.RecettesComponent
       ),
+    canActivate: [bannedGuard],
   },
   {
     path: 'about',
@@ -29,11 +33,17 @@ export const routes: Routes = [
       ),
   },
   {
+    path: 'banned',
+    loadComponent: () =>
+      import('./pages/banned/banned.component').then((m) => m.BannedComponent),
+  },
+  {
     path: 'profile',
     loadComponent: () =>
       import('./pages/profile/profile.component').then(
         (m) => m.ProfileComponent
       ),
+    canActivate: [authGuard, bannedGuard],
   },
   {
     path: 'conditions-utilisation',
@@ -62,6 +72,7 @@ export const routes: Routes = [
       import('./pages/admin-dashboard/admin-dashboard.component').then(
         (m) => m.AdminDashboardComponent
       ),
+    canActivate: [AdminGuard, bannedGuard],
   },
   { path: '**', redirectTo: '' },
 ];

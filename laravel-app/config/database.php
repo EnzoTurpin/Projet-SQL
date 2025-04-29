@@ -115,7 +115,7 @@ return [
         'mongodb' => [
             'driver' => 'mongodb',
             'dsn' => env('DB_URI', 'mongodb+srv://' . env('DB_USERNAME') . ':' . urlencode(env('DB_PASSWORD')) . '@projectynov.oluzqp6.mongodb.net/'),
-            'database' => env('DB_DATABASE', 'cocktail-api'),
+            'database' => env('DB_DATABASE', 'test'),
         ],
     ],
 

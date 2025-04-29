@@ -1,23 +1,359 @@
-<h2>Liste des utilisateurs</h2>
+<div
+  class="bg-color-blanc-custom w-full min-h-screen px-2 sm:px-4 py-8 sm:py-12"
+>
+  <div class="max-w-7xl mx-auto">
+    <h1
+      class="text-2xl sm:text-3xl font-bold text-center text-tropical-vibes mb-6 sm:mb-10"
+    >
+      Dashboard Administrateur
+    </h1>
 
-<table>
-  <thead>
-    <tr>
-      <th>Nom</th>
-      <th>Email</th>
-      <th>Type</th>
-      <th>Action</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr *ngFor="let user of users">
-      <td>{{ user.name }}</td>
-      <td>{{ user.email }}</td>
-      <td>{{ user.user_type }}</td>
-      <td>
-        <button (click)="banUser(user._id)">Bannir</button>
-        <button (click)="deleteUser(user._id)">Supprimer</button>
-      </td>
-    </tr>
-  </tbody>
-</table>
+    <!-- Onglets de navigation -->
+    <div class="flex flex-wrap border-b border-gray-200 mb-6 sm:mb-8">
+      <button
+        (click)="activeTab = 'users'"
+        [ngClass]="{
+          'text-tropical-vibes border-b-2 border-tropical-vibes':
+            activeTab === 'users',
+          'text-gray-500 hover:text-gray-700': activeTab !== 'users'
+        }"
+        class="py-3 px-4 sm:py-4 sm:px-6 font-medium text-base sm:text-lg flex-1 sm:flex-none text-center sm:text-left"
+      >
+        Gestion des utilisateurs
+      </button>
+      <button
+        (click)="activeTab = 'unban-requests'"
+        [ngClass]="{
+          'text-tropical-vibes border-b-2 border-tropical-vibes':
+            activeTab === 'unban-requests',
+          'text-gray-500 hover:text-gray-700': activeTab !== 'unban-requests'
+        }"
+        class="py-3 px-4 sm:py-4 sm:px-6 font-medium text-base sm:text-lg flex-1 sm:flex-none text-center sm:text-left"
+      >
+        Demandes de débanissement
+        <span
+          *ngIf="pendingUnbanRequests.length > 0"
+          class="inline-flex items-center justify-center ml-2 w-5 h-5 text-xs font-semibold text-white bg-red-500 rounded-full"
+        >
+          {{ pendingUnbanRequests.length }}
+        </span>
+      </button>
+      <button
+        (click)="activeTab = 'bar-items'"
+        [ngClass]="{
+          'text-tropical-vibes border-b-2 border-tropical-vibes':
+            activeTab === 'bar-items',
+          'text-gray-500 hover:text-gray-700': activeTab !== 'bar-items'
+        }"
+        class="py-3 px-4 sm:py-4 sm:px-6 font-medium text-base sm:text-lg flex-1 sm:flex-none text-center sm:text-left"
+      >
+        Ingrédients & Verres
+      </button>
+      <button
+        (click)="activeTab = 'cocktails'"
+        [ngClass]="{
+          'text-tropical-vibes border-b-2 border-tropical-vibes':
+            activeTab === 'cocktails',
+          'text-gray-500 hover:text-gray-700': activeTab !== 'cocktails'
+        }"
+        class="py-3 px-4 sm:py-4 sm:px-6 font-medium text-base sm:text-lg flex-1 sm:flex-none text-center sm:text-left"
+      >
+        Gestion des cocktails
+      </button>
+    </div>
+
+    <!-- Section utilisateurs -->
+    <div *ngIf="activeTab === 'users'">
+      <div class="bg-white rounded-lg shadow-lg p-4 sm:p-6">
+        <h2
+          class="text-xl sm:text-2xl font-bold text-tropical-vibes mb-4 sm:mb-6"
+        >
+          Liste des utilisateurs
+        </h2>
+
+        <!-- Message d'erreur -->
+        <div
+          *ngIf="errorMessage"
+          class="mb-4 p-3 bg-red-100 text-red-800 rounded-md font-medium text-center animate-pulse"
+        >
+          {{ errorMessage }}
+        </div>
+
+        <div *ngIf="users.length === 0" class="text-center py-8 text-gray-500">
+          Aucun utilisateur trouvé.
+        </div>
+
+        <div class="overflow-x-auto" *ngIf="users.length > 0">
+          <table class="min-w-full bg-white">
+            <thead class="bg-gray-50">
+              <tr>
+                <th
+                  class="px-3 py-2 sm:px-6 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                >
+                  Nom
+                </th>
+                <th
+                  class="px-3 py-2 sm:px-6 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                >
+                  Email
+                </th>
+                <th
+                  class="px-3 py-2 sm:px-6 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden sm:table-cell"
+                >
+                  Type
+                </th>
+                <th
+                  class="px-3 py-2 sm:px-6 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                >
+                  Actions
+                </th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-200">
+              <tr *ngFor="let user of users" class="hover:bg-gray-50">
+                <td
+                  class="px-3 py-2 sm:px-6 sm:py-4 whitespace-normal sm:whitespace-nowrap text-sm"
+                >
+                  {{ user.name }}
+                </td>
+                <td
+                  class="px-3 py-2 sm:px-6 sm:py-4 whitespace-normal sm:whitespace-nowrap text-sm"
+                >
+                  <span class="block sm:hidden"
+                    >{{ user.email | slice : 0 : 15 }}...</span
+                  >
+                  <span class="hidden sm:block">{{ user.email }}</span>
+                </td>
+                <td
+                  class="px-3 py-2 sm:px-6 sm:py-4 whitespace-nowrap hidden sm:table-cell"
+                >
+                  <span
+                    class="px-2 py-1 rounded-full text-xs"
+                    [ngClass]="{
+                      'bg-purple-100 text-purple-800':
+                        user.user_type === 'admin',
+                      'bg-blue-100 text-blue-800': user.user_type === 'user'
+                    }"
+                  >
+                    {{ user.user_type }}
+                  </span>
+                </td>
+                <td class="px-3 py-2 sm:px-6 sm:py-4 whitespace-nowrap">
+                  <div class="flex flex-col sm:flex-row gap-2">
+                    <button
+                      (click)="banUser(user)"
+                      [disabled]="user.user_type === 'admin'"
+                      class="px-2 py-1 sm:px-3 sm:py-1 text-white text-xs sm:text-sm rounded-md transition-colors"
+                      [ngClass]="
+                        user.banned
+                          ? 'bg-green-500 hover:bg-green-600'
+                          : 'bg-yellow-500 hover:bg-yellow-600'
+                      "
+                      [class.opacity-50]="user.user_type === 'admin'"
+                      [class.cursor-not-allowed]="user.user_type === 'admin'"
+                      [title]="
+                        user.user_type === 'admin'
+                          ? 'Impossible de bannir un administrateur'
+                          : ''
+                      "
+                    >
+                      {{ user.banned ? "Débannir" : "Bannir" }}
+                    </button>
+                    <button
+                      (click)="deleteUser(user)"
+                      [disabled]="user.user_type === 'admin'"
+                      class="px-2 py-1 sm:px-3 sm:py-1 bg-red-500 text-white text-xs sm:text-sm rounded-md hover:bg-red-600 transition-colors"
+                      [class.opacity-50]="user.user_type === 'admin'"
+                      [class.cursor-not-allowed]="user.user_type === 'admin'"
+                      [title]="
+                        user.user_type === 'admin'
+                          ? 'Impossible de supprimer un administrateur'
+                          : ''
+                      "
+                    >
+                      Supprimer
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section demandes de débanissement -->
+    <div *ngIf="activeTab === 'unban-requests'">
+      <div class="bg-white rounded-lg shadow-lg p-4 sm:p-6">
+        <h2
+          class="text-xl sm:text-2xl font-bold text-tropical-vibes mb-4 sm:mb-6"
+        >
+          Demandes de débanissement
+        </h2>
+
+        <!-- Sous-onglets pour les demandes -->
+        <div class="flex mb-4 border-b border-gray-200">
+          <button
+            (click)="unbanRequestsTab = 'pending'"
+            [ngClass]="{
+              'text-tropical-vibes border-b-2 border-tropical-vibes':
+                unbanRequestsTab === 'pending',
+              'text-gray-500 hover:text-gray-700':
+                unbanRequestsTab !== 'pending'
+            }"
+            class="py-2 px-4 font-medium text-sm flex-1 sm:flex-none text-center"
+          >
+            En attente
+            <span
+              *ngIf="pendingUnbanRequests.length > 0"
+              class="inline-flex items-center justify-center ml-1 w-5 h-5 text-xs font-semibold text-white bg-red-500 rounded-full"
+            >
+              {{ pendingUnbanRequests.length }}
+            </span>
+          </button>
+          <button
+            (click)="unbanRequestsTab = 'all'"
+            [ngClass]="{
+              'text-tropical-vibes border-b-2 border-tropical-vibes':
+                unbanRequestsTab === 'all',
+              'text-gray-500 hover:text-gray-700': unbanRequestsTab !== 'all'
+            }"
+            class="py-2 px-4 font-medium text-sm flex-1 sm:flex-none text-center"
+          >
+            Toutes les demandes
+          </button>
+        </div>
+
+        <!-- Contenu des demandes en attente -->
+        <div *ngIf="unbanRequestsTab === 'pending'">
+          <div
+            *ngIf="pendingUnbanRequests.length === 0"
+            class="text-center py-8 text-gray-500"
+          >
+            Aucune demande de débanissement en attente.
+          </div>
+
+          <div class="space-y-4" *ngIf="pendingUnbanRequests.length > 0">
+            <div
+              *ngFor="let request of pendingUnbanRequests"
+              class="bg-gray-50 p-4 rounded-lg border border-gray-200"
+            >
+              <div
+                class="flex flex-col md:flex-row justify-between items-start md:items-center mb-3"
+              >
+                <div>
+                  <h3 class="font-semibold text-lg">{{ request.user_name }}</h3>
+                  <p class="text-sm text-gray-600">{{ request.user_email }}</p>
+                </div>
+                <div class="mt-2 md:mt-0">
+                  <span
+                    class="px-3 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800"
+                  >
+                    En attente
+                  </span>
+                </div>
+              </div>
+
+              <div class="bg-white p-3 rounded border border-gray-200 mb-4">
+                <p class="text-sm text-gray-700">{{ request.reason }}</p>
+              </div>
+
+              <div class="flex justify-end space-x-2">
+                <button
+                  (click)="rejectUnbanRequest(request)"
+                  class="px-3 py-1 bg-red-500 text-white text-sm rounded-md hover:bg-red-600 transition-colors"
+                >
+                  Rejeter
+                </button>
+                <button
+                  (click)="approveUnbanRequest(request)"
+                  class="px-3 py-1 bg-green-500 text-white text-sm rounded-md hover:bg-green-600 transition-colors"
+                >
+                  Approuver
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Contenu de toutes les demandes -->
+        <div *ngIf="unbanRequestsTab === 'all'">
+          <div
+            *ngIf="unbanRequests.length === 0"
+            class="text-center py-8 text-gray-500"
+          >
+            Aucune demande de débanissement.
+          </div>
+
+          <div class="space-y-4" *ngIf="unbanRequests.length > 0">
+            <div
+              *ngFor="let request of unbanRequests"
+              class="bg-gray-50 p-4 rounded-lg border border-gray-200"
+            >
+              <div
+                class="flex flex-col md:flex-row justify-between items-start md:items-center mb-3"
+              >
+                <div>
+                  <h3 class="font-semibold text-lg">{{ request.user_name }}</h3>
+                  <p class="text-sm text-gray-600">{{ request.user_email }}</p>
+                </div>
+                <div class="mt-2 md:mt-0">
+                  <span
+                    class="px-3 py-1 rounded-full text-xs font-medium"
+                    [ngClass]="{
+                      'bg-yellow-100 text-yellow-800':
+                        request.status === 'pending',
+                      'bg-green-100 text-green-800':
+                        request.status === 'approved',
+                      'bg-red-100 text-red-800': request.status === 'rejected'
+                    }"
+                  >
+                    {{
+                      request.status === "pending"
+                        ? "En attente"
+                        : request.status === "approved"
+                        ? "Approuvée"
+                        : "Rejetée"
+                    }}
+                  </span>
+                </div>
+              </div>
+
+              <div class="bg-white p-3 rounded border border-gray-200 mb-4">
+                <p class="text-sm text-gray-700">{{ request.reason }}</p>
+              </div>
+
+              <div
+                class="flex justify-end space-x-2"
+                *ngIf="request.status === 'pending'"
+              >
+                <button
+                  (click)="rejectUnbanRequest(request)"
+                  class="px-3 py-1 bg-red-500 text-white text-sm rounded-md hover:bg-red-600 transition-colors"
+                >
+                  Rejeter
+                </button>
+                <button
+                  (click)="approveUnbanRequest(request)"
+                  class="px-3 py-1 bg-green-500 text-white text-sm rounded-md hover:bg-green-600 transition-colors"
+                >
+                  Approuver
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section gestion des ingrédients et verres -->
+    <div *ngIf="activeTab === 'bar-items'">
+      <app-admin-bar-items></app-admin-bar-items>
+    </div>
+
+    <!-- Section cocktails -->
+    <div *ngIf="activeTab === 'cocktails'" class="w-full">
+      <app-admin-cocktail></app-admin-cocktail>
+    </div>
+  </div>
+</div>

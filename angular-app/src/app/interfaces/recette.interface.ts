@@ -7,6 +7,12 @@ export interface Recette {
   preparationTime: string;
   ingredients?: any[];
   instructions?: string[] | string;
+  glassType?: string;
+  alcoholLevel?: string;
+  mainAlcohol?: string;
+  garnish?: string;
+  category_id?: string;
+  isMocktail?: boolean;
 }
 
 export interface Ingredient {

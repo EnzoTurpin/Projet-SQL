@@ -14,13 +14,22 @@ class Recipe extends Model
 
     protected $fillable = [
         'name',
-        'ingredient_id',
-        'quantity',
+        'description',
+        'image',
+        'difficulty',
+        'preparationTime',
+        'ingredients',  
         'instructions',
-        'category_id',
-        'glass_id',
-        'garnish',
-        'mainAlcohol',
+        'glassType',     // Type de verre
+        'alcoholLevel',  // Niveau d'alcool en %
+        'garnish',       // Garniture
+        'category_id',   // ID de la catégorie
+        'isMocktail'     // Si c'est un mocktail (sans alcool)
+    ];
+
+    protected $appends = [
+        // Ajoute automatiquement l'URL complète dans le champ image
+        // sans toucher à la valeur stockée en base
     ];
 
     // Relation avec les ingrédients
@@ -45,6 +54,23 @@ class Recipe extends Model
     public function favoredByUsers()
     {
         return $this->belongsToMany(User::class, 'favorite_recipes', 'recipe_id', 'user_id');
+    }
+
+    // Accessor pour transformer le chemin relatif de l'image en URL complète
+    public function getImageAttribute($value)
+    {
+        // Si le champ est vide, on renvoie null
+        if (!$value) {
+            return $value;
+        }
+
+        // Si c'est déjà une URL, on la renvoie telle quelle
+        if (filter_var($value, FILTER_VALIDATE_URL)) {
+            return $value;
+        }
+
+        // On construit l'URL complète via le helper url()
+        return url(ltrim($value, '/'));
     }
 }
 

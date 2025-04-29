@@ -8,16 +8,21 @@ use App\Http\Controllers\GlassController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\FavoriteRecipeController;
+use App\Http\Controllers\UnbanRequestController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use App\Http\Controllers\DiagnosticController;
+use App\Http\Controllers\GarnishController;
 
-// Route de vérification d'authentification
-Route::get('/auth/check', [AuthController::class, 'check']);
+// Route protégée pour vérifier l'authentification (nécessite la session "web" + Sanctum)
+Route::middleware(['web', 'auth:sanctum'])->get('/auth/check', [AuthController::class, 'user']);
 
 // Routes publiques
 Route::post('/register', [UserController::class, 'store']);
 Route::post('/login', [AuthController::class, 'login'])->middleware('web');
+
+// Route publique de création de demande (mais avec middleware "web" pour la gestion CSRF/session)
+Route::post('/unban-requests', [UnbanRequestController::class, 'store'])->middleware('web');
 
 // Route de diagnostic pour vérifier l'état de la session
 Route::get('/session-debug', function (Request $request) {
@@ -96,10 +101,8 @@ Route::get('/categories/{id}', [CategoryController::class, 'show']);
 // Route de test pour les recettes (accessible sans authentification)
 Route::get('/test-recipes', [RecipeController::class, 'testRecipes']);
 
-Route::middleware('auth:sanctum')->get('/auth/check', function () {
-    return response()->json(['authenticated' => true, 'user' => Auth::user()]);
-});
-
+Route::get('/garnishes', [GarnishController::class, 'index']);
+Route::get('/garnishes/{id}', [GarnishController::class, 'show']);
 
 // Routes protégées par auth:sanctum
 Route::middleware(['web','auth:sanctum'])->group(function () {
@@ -120,6 +123,11 @@ Route::middleware(['web','auth:sanctum'])->group(function () {
     Route::delete('/users/{id}', [UserController::class, 'destroy']);
     Route::post('/users/{id}/ban', [UserController::class, 'ban']);
 
+    // Gestion des demandes de débanissement (pour les administrateurs)
+    Route::get('/unban-requests', [UnbanRequestController::class, 'index']);
+    Route::post('/unban-requests/{id}/approve', [UnbanRequestController::class, 'approve']);
+    Route::post('/unban-requests/{id}/reject', [UnbanRequestController::class, 'reject']);
+
     // Gestion recettes
     Route::post('/recipes', [RecipeController::class, 'store']);
     Route::put('/recipes', [RecipeController::class, 'update']);
@@ -137,6 +145,11 @@ Route::middleware(['web','auth:sanctum'])->group(function () {
     Route::put('/glass', [GlassController::class, 'update']);
     Route::delete('/glass/{id}', [GlassController::class, 'destroy']);
     Route::post('/glass/{id}/ban', [GlassController::class, 'ban']);
+
+    // Gestion garnitures
+    Route::post('/garnishes', [GarnishController::class, 'store']);
+    Route::put('/garnishes/{id}', [GarnishController::class, 'update']);
+    Route::delete('/garnishes/{id}', [GarnishController::class, 'destroy']);
 
     // Gestion catégories
     Route::post('/categories', [CategoryController::class, 'store']);

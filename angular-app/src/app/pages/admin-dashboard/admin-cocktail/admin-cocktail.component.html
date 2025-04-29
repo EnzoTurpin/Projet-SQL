@@ -1,0 +1,587 @@
+<div class="bg-color-blanc-custom w-full">
+  <div class="bg-color-blanc-custom rounded-lg p-2 sm:p-6 mb-4 sm:mb-8">
+    <h2 class="text-xl sm:text-2xl font-bold text-tropical-vibes mb-4 sm:mb-6">
+      {{ isEditing ? "Modifier un cocktail" : "Ajouter un nouveau cocktail" }}
+    </h2>
+
+    <!-- Message de statut -->
+    <div
+      *ngIf="statusMessage"
+      [ngClass]="{
+        'bg-green-100 text-green-800': isSuccess,
+        'bg-red-100 text-red-800': !isSuccess
+      }"
+      class="p-3 sm:p-4 mb-4 rounded-md text-sm sm:text-base"
+    >
+      {{ statusMessage }}
+    </div>
+
+    <form
+      [formGroup]="cocktailForm"
+      (ngSubmit)="onSubmit()"
+      class="space-y-4 sm:space-y-6"
+    >
+      <!-- Nom et description -->
+      <div
+        class="bg-color-blanc-custom grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6"
+      >
+        <div>
+          <label class="block text-gray-700 mb-1 sm:mb-2 text-sm sm:text-base"
+            >Nom du cocktail</label
+          >
+          <input
+            type="text"
+            formControlName="name"
+            class="w-full p-2 sm:p-3 text-sm sm:text-base border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-tropical-vibes"
+            [ngClass]="{
+              'border-red-500':
+                formSubmitted && cocktailForm.get('name')?.invalid
+            }"
+          />
+          <div
+            *ngIf="formSubmitted && cocktailForm.get('name')?.errors"
+            class="text-red-500 mt-1 text-xs sm:text-sm"
+          >
+            <div *ngIf="cocktailForm.get('name')?.errors?.['required']">
+              Le nom est obligatoire
+            </div>
+            <div *ngIf="cocktailForm.get('name')?.errors?.['minlength']">
+              Le nom doit contenir au moins 3 caractères
+            </div>
+          </div>
+        </div>
+        <div>
+          <label class="block text-gray-700 mb-1 sm:mb-2 text-sm sm:text-base"
+            >Image du cocktail</label
+          >
+          <div class="space-y-2">
+            <!-- Upload d'image avec aperçu -->
+            <div class="flex flex-col space-y-2">
+              <div
+                class="border-2 border-dashed border-gray-300 rounded-md p-4 text-center hover:bg-gray-50 transition-colors cursor-pointer"
+                (click)="fileInput.click()"
+                [ngClass]="{
+                  'border-red-500':
+                    formSubmitted && cocktailForm.get('image')?.invalid
+                }"
+              >
+                <input
+                  #fileInput
+                  type="file"
+                  accept="image/*"
+                  class="hidden"
+                  (change)="onFileSelected($event)"
+                />
+
+                <div *ngIf="!imagePreview" class="py-4">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    class="mx-auto h-12 w-12 text-gray-400"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                    />
+                  </svg>
+                  <p class="mt-1 text-sm text-gray-500">
+                    Cliquez pour sélectionner une image
+                  </p>
+                </div>
+
+                <div *ngIf="imagePreview" class="relative">
+                  <img
+                    [src]="imagePreview"
+                    alt="Aperçu du cocktail"
+                    class="mx-auto max-h-40 object-contain"
+                  />
+                  <button
+                    type="button"
+                    class="absolute top-0 right-0 bg-red-500 text-white rounded-full p-1 transform translate-x-1/2 -translate-y-1/2"
+                    (click)="removeImage($event)"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      class="h-4 w-4"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M6 18L18 6M6 6l12 12"
+                      />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div
+              *ngIf="formSubmitted && cocktailForm.get('image')?.errors"
+              class="text-red-500 mt-1 text-xs sm:text-sm"
+            >
+              <div *ngIf="cocktailForm.get('image')?.errors?.['required']">
+                Une image est requise pour le cocktail
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <label class="block text-gray-700 mb-1 sm:mb-2 text-sm sm:text-base"
+          >Description</label
+        >
+        <textarea
+          formControlName="description"
+          rows="3"
+          class="w-full p-2 sm:p-3 text-sm sm:text-base border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-tropical-vibes"
+          [ngClass]="{
+            'border-red-500':
+              formSubmitted && cocktailForm.get('description')?.invalid
+          }"
+        ></textarea>
+        <div
+          *ngIf="formSubmitted && cocktailForm.get('description')?.errors"
+          class="text-red-500 mt-1 text-xs sm:text-sm"
+        >
+          <div *ngIf="cocktailForm.get('description')?.errors?.['required']">
+            La description est obligatoire
+          </div>
+          <div *ngIf="cocktailForm.get('description')?.errors?.['minlength']">
+            La description doit contenir au moins 10 caractères
+          </div>
+        </div>
+      </div>
+
+      <!-- Difficulté et temps de préparation -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+        <div>
+          <label class="block text-gray-700 mb-1 sm:mb-2 text-sm sm:text-base"
+            >Difficulté</label
+          >
+          <select
+            formControlName="difficulty"
+            class="w-full p-2 sm:p-3 text-sm sm:text-base border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-tropical-vibes"
+          >
+            <option *ngFor="let option of difficultyOptions" [value]="option">
+              {{ option }}
+            </option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-gray-700 mb-1 sm:mb-2 text-sm sm:text-base"
+            >Temps de préparation (minutes)</label
+          >
+          <input
+            type="number"
+            formControlName="preparationTime"
+            class="w-full p-2 sm:p-3 text-sm sm:text-base border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-tropical-vibes"
+            [ngClass]="{
+              'border-red-500':
+                formSubmitted && cocktailForm.get('preparationTime')?.invalid
+            }"
+            placeholder="Ex: 10"
+          />
+          <div
+            *ngIf="formSubmitted && cocktailForm.get('preparationTime')?.errors"
+            class="text-red-500 mt-1 text-xs sm:text-sm"
+          >
+            <div
+              *ngIf="cocktailForm.get('preparationTime')?.errors?.['required']"
+            >
+              Le temps de préparation est obligatoire
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Type de verre, niveau d'alcool et garniture -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
+        <div>
+          <label class="block text-gray-700 mb-1 sm:mb-2 text-sm sm:text-base"
+            >Type de verre</label
+          >
+          <select
+            formControlName="glassType"
+            class="w-full p-2 sm:p-3 text-sm sm:text-base border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-tropical-vibes"
+          >
+            <option value="">Sélectionner un type de verre</option>
+            <option *ngFor="let glass of glasses" [value]="glass.name">
+              {{ glass.name }}
+            </option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-gray-700 mb-1 sm:mb-2 text-sm sm:text-base"
+            >Niveau d'alcool</label
+          >
+          <input
+            type="text"
+            formControlName="alcoholLevel"
+            class="w-full p-2 sm:p-3 text-sm sm:text-base border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-tropical-vibes"
+            placeholder="Ex: 40%"
+          />
+        </div>
+        <div>
+          <label class="block text-gray-700 mb-1 sm:mb-2 text-sm sm:text-base"
+            >Garniture</label
+          >
+          <select
+            formControlName="garnish"
+            class="w-full p-2 sm:p-3 text-sm sm:text-base border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-tropical-vibes"
+          >
+            <option value="">-- Aucun --</option>
+            <option *ngFor="let g of garnishes" [value]="g.name">
+              {{ g.name }}
+            </option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Mocktail option -->
+      <div class="mt-4">
+        <label class="block text-gray-700 mb-2 text-sm sm:text-base"
+          >Type de boisson</label
+        >
+        <div class="flex items-center space-x-6">
+          <div class="flex items-center">
+            <input
+              type="radio"
+              id="cocktailOption"
+              name="isMocktail"
+              [value]="false"
+              formControlName="isMocktail"
+              class="w-4 h-4 text-tropical-vibes"
+            />
+            <label
+              for="cocktailOption"
+              class="ml-2 text-gray-700 text-sm sm:text-base"
+              >Cocktail (avec alcool)</label
+            >
+          </div>
+          <div class="flex items-center">
+            <input
+              type="radio"
+              id="mocktailOption"
+              name="isMocktail"
+              [value]="true"
+              formControlName="isMocktail"
+              class="w-4 h-4 text-tropical-vibes"
+            />
+            <label
+              for="mocktailOption"
+              class="ml-2 text-gray-700 text-sm sm:text-base"
+              >Mocktail (sans alcool)</label
+            >
+          </div>
+        </div>
+      </div>
+
+      <!-- Ingrédients -->
+      <div class="space-y-3 sm:space-y-4">
+        <div
+          class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 sm:gap-0"
+        >
+          <label
+            class="bg-color-blanc-custom block text-gray-700 text-base sm:text-lg font-medium"
+            >Ingrédients</label
+          >
+          <button
+            type="button"
+            (click)="addIngredient()"
+            class="bg-tropical-vibes text-white px-3 py-1.5 sm:px-4 sm:py-2 text-sm sm:text-base rounded-md hover:bg-opacity-90 transition-colors self-start sm:self-auto"
+          >
+            Ajouter un ingrédient
+          </button>
+        </div>
+
+        <div formArrayName="ingredients" class="space-y-3">
+          <div
+            *ngFor="let ingredient of ingredients.controls; let i = index"
+            [formGroupName]="i"
+            class="grid grid-cols-12 gap-2 sm:gap-4 p-2 sm:p-3 bg-color-blanc-custom rounded-md"
+          >
+            <div class="col-span-5 sm:col-span-6">
+              <select
+                formControlName="name"
+                class="w-full p-1.5 sm:p-2 text-xs sm:text-sm border border-gray-300 rounded-md"
+                [ngClass]="{
+                  'border-red-500':
+                    formSubmitted && ingredient.get('name')?.invalid
+                }"
+              >
+                <option value="">Choisir un ingrédient</option>
+                <option *ngFor="let item of allIngredients" [value]="item.name">
+                  {{ item.name }}
+                </option>
+              </select>
+            </div>
+            <div class="col-span-3 sm:col-span-2">
+              <input
+                type="text"
+                formControlName="quantity"
+                placeholder="Quantité"
+                class="w-full p-1.5 sm:p-2 text-xs sm:text-sm border border-gray-300 rounded-md"
+                [ngClass]="{
+                  'border-red-500':
+                    formSubmitted && ingredient.get('quantity')?.invalid
+                }"
+              />
+            </div>
+            <div class="col-span-3 sm:col-span-2">
+              <input
+                type="text"
+                formControlName="unit"
+                placeholder="Unité"
+                class="w-full p-1.5 sm:p-2 text-xs sm:text-sm border border-gray-300 rounded-md"
+              />
+            </div>
+            <div
+              class="col-span-1 sm:col-span-2 flex items-center justify-center sm:justify-end"
+            >
+              <button
+                type="button"
+                (click)="removeIngredient(i)"
+                class="text-red-500 hover:text-red-700"
+                [disabled]="ingredients.length <= 1"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  class="h-5 w-5 sm:h-6 sm:w-6"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                  />
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Instructions -->
+      <div class="space-y-3 sm:space-y-4">
+        <div
+          class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 sm:gap-0"
+        >
+          <label class="block text-gray-700 text-base sm:text-lg font-medium"
+            >Instructions de préparation</label
+          >
+          <button
+            type="button"
+            (click)="addInstruction()"
+            class="bg-tropical-vibes text-white px-3 py-1.5 sm:px-4 sm:py-2 text-sm sm:text-base rounded-md hover:bg-opacity-90 transition-colors self-start sm:self-auto"
+          >
+            Ajouter une étape
+          </button>
+        </div>
+
+        <div formArrayName="instructions" class="space-y-3">
+          <div
+            *ngFor="let instruction of instructions.controls; let i = index"
+            [formGroupName]="i"
+            class="flex items-center gap-2 sm:gap-4"
+          >
+            <div
+              class="flex-shrink-0 w-6 h-6 sm:w-8 sm:h-8 bg-tropical-vibes text-white rounded-full flex items-center justify-center text-xs sm:text-sm"
+            >
+              {{ i + 1 }}
+            </div>
+            <div class="flex-grow">
+              <input
+                type="text"
+                formControlName="step"
+                placeholder="Étape de préparation"
+                class="w-full p-2 sm:p-3 text-xs sm:text-sm border border-gray-300 rounded-md"
+                [ngClass]="{
+                  'border-red-500':
+                    formSubmitted && instruction.get('step')?.invalid
+                }"
+              />
+            </div>
+            <div>
+              <button
+                type="button"
+                (click)="removeInstruction(i)"
+                class="text-red-500 hover:text-red-700"
+                [disabled]="instructions.length <= 1"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  class="h-5 w-5 sm:h-6 sm:w-6"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                  />
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Boutons -->
+      <div
+        class="flex flex-col sm:flex-row sm:justify-end space-y-3 sm:space-y-0 sm:space-x-4 mt-6"
+      >
+        <button
+          type="button"
+          (click)="resetForm()"
+          class="px-4 py-2 sm:px-6 sm:py-3 border border-gray-300 text-sm sm:text-base rounded-md text-gray-700 hover:bg-gray-50 transition-colors order-2 sm:order-1"
+        >
+          Annuler
+        </button>
+        <button
+          type="submit"
+          [disabled]="isLoading"
+          class="px-4 py-2 sm:px-6 sm:py-3 bg-tropical-vibes text-white text-sm sm:text-base rounded-md hover:bg-opacity-90 transition-colors flex items-center justify-center order-1 sm:order-2"
+        >
+          <span *ngIf="isLoading" class="mr-2">
+            <svg
+              class="animate-spin h-4 w-4 sm:h-5 sm:w-5 text-white"
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+            >
+              <circle
+                class="opacity-25"
+                cx="12"
+                cy="12"
+                r="10"
+                stroke="currentColor"
+                stroke-width="4"
+              ></circle>
+              <path
+                class="opacity-75"
+                fill="currentColor"
+                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+              ></path>
+            </svg>
+          </span>
+          {{ isEditing ? "Mettre à jour" : "Ajouter" }} le cocktail
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Liste des cocktails existants -->
+  <div class="bg-color-blanc-custom rounded-lg p-2 sm:p-6">
+    <h2 class="text-xl sm:text-2xl font-bold text-tropical-vibes mb-4 sm:mb-6">
+      Liste des cocktails
+    </h2>
+
+    <div *ngIf="isLoading" class="flex justify-center my-6 sm:my-8">
+      <svg
+        class="animate-spin h-8 w-8 sm:h-10 sm:w-10 text-tropical-vibes"
+        xmlns="http://www.w3.org/2000/svg"
+        fill="none"
+        viewBox="0 0 24 24"
+      >
+        <circle
+          class="opacity-25"
+          cx="12"
+          cy="12"
+          r="10"
+          stroke="currentColor"
+          stroke-width="4"
+        ></circle>
+        <path
+          class="opacity-75"
+          fill="currentColor"
+          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+        ></path>
+      </svg>
+    </div>
+
+    <div
+      *ngIf="!isLoading && cocktails.length === 0"
+      class="text-center py-6 sm:py-8 text-gray-500"
+    >
+      Aucun cocktail trouvé. Ajoutez votre premier cocktail!
+    </div>
+
+    <div
+      *ngIf="!isLoading && cocktails.length > 0"
+      class="grid grid-cols-1 gap-4 sm:gap-6"
+    >
+      <div
+        *ngFor="let cocktail of cocktails"
+        class="border border-gray-200 rounded-lg p-3 sm:p-4 flex flex-col sm:flex-row items-center"
+      >
+        <div
+          class="w-20 h-20 sm:w-24 sm:h-24 flex-shrink-0 mb-3 sm:mb-0 sm:mr-4"
+        >
+          <img
+            [src]="cocktail.image"
+            [alt]="cocktail.name"
+            class="w-full h-full object-cover rounded-md"
+          />
+        </div>
+        <div class="flex-grow text-center sm:text-left mb-4 sm:mb-0">
+          <h3 class="text-lg sm:text-xl font-semibold text-tropical-vibes">
+            {{ cocktail.name }}
+          </h3>
+          <p class="text-gray-600 text-sm sm:text-base line-clamp-2 mb-2">
+            {{ cocktail.description }}
+          </p>
+          <div
+            class="flex items-center gap-2 justify-center sm:justify-start flex-wrap"
+          >
+            <span
+              class="px-2 py-1 rounded-full text-xs"
+              [ngClass]="{
+                'bg-green-100 text-green-800': cocktail.difficulty === 'Facile',
+                'bg-yellow-100 text-yellow-800':
+                  cocktail.difficulty === 'Moyen',
+                'bg-red-100 text-red-800': cocktail.difficulty === 'Difficile'
+              }"
+            >
+              {{ cocktail.difficulty }}
+            </span>
+            <span class="text-gray-500 text-xs sm:text-sm">{{
+              cocktail.preparationTime
+            }}</span>
+          </div>
+        </div>
+        <div
+          class="w-full sm:w-auto flex items-center justify-center sm:justify-end gap-2 sm:gap-3"
+        >
+          <button
+            type="button"
+            (click)="editCocktail(cocktail)"
+            class="px-3 py-1.5 sm:px-4 sm:py-2 text-xs sm:text-sm border border-tropical-vibes text-tropical-vibes rounded-md hover:bg-tropical-vibes hover:text-white transition-colors"
+          >
+            Modifier
+          </button>
+          <button
+            type="button"
+            (click)="deleteCocktail(cocktail)"
+            class="px-3 py-1.5 sm:px-4 sm:py-2 text-xs sm:text-sm border border-red-500 text-red-500 rounded-md hover:bg-red-500 hover:text-white transition-colors"
+          >
+            Supprimer
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -227,13 +227,17 @@ class UserController extends Controller
 
         $user = User::findOrFail($id);
 
-        if(Auth::id() !== $user->id  && Auth::user()->user_type !== 'admin') {
+        if(Auth::id() !== $user->_id && Auth::user()->user_type !== 'admin') {
             return ResponseApi::sendApiResponse('fail','Vous ne pouvez pas supprimer un autre utilisateur', null,403);
         } else {
             $user->delete();
-            Auth::logout();
 
-            return ResponseApi::sendApiResponse('success','Profil supprimé avec succès, Vous allez être redirigé vers l\'accueil', null,0);
+            // Si l'utilisateur supprime son propre compte, on le déconnecte. L'admin reste authentifié.
+            if (Auth::id() === $user->_id) {
+                Auth::logout();
+            }
+
+            return ResponseApi::sendApiResponse('success','Profil supprimé avec succès.', null,204);
         }
     }
 
@@ -253,13 +257,23 @@ class UserController extends Controller
         } else {
             try {
                 $user = User::findOrFail($id);
-                $updated = $user->update(['banned' => true]);
+
+                // Empêcher un admin de se bannir/débannir lui-même
+                if ($user->_id === $admin->_id) {
+                    return ResponseApi::sendApiResponse('fail','Vous ne pouvez pas modifier votre propre statut de bannissement.', null,400);
+                }
+
+                // Toggle du statut de bannissement
+                $newStatus = !$user->banned;
+                $action = $newStatus ? 'banni' : 'débanni';
+
+                $updated = $user->update(['banned' => $newStatus]);
 
                 if(!$updated) {
-                    return ResponseApi::sendApiResponse('fail','Une erreur est survenue lors du bannissement de l\'utilisateur.', null,500);
-                } else {
-                    return ResponseApi::sendApiResponse('success','Utilisateur banni avec succès.', null,0);
+                    return ResponseApi::sendApiResponse('fail','Une erreur est survenue lors de la mise à jour du statut de l\'utilisateur.', null,500);
                 }
+
+                return ResponseApi::sendApiResponse('success',"Utilisateur $action avec succès.", ['user' => $user->fresh()],200);
             } catch (\Exception $e) {
                 return ResponseApi::sendApiResponse('fail','Utilisateur non trouvé.', null,404);
             }

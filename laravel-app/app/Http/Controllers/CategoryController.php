@@ -19,6 +19,7 @@ class CategoryController extends Controller
     public function create(Request $request){
         return Validator::make($request->all(), [
             'name' => 'required|string|max:255',
+            'isMocktail' => 'boolean',
         ], [
             'name.required' => 'Le champ nom est obligatoire.',
         ]);
@@ -65,7 +66,9 @@ class CategoryController extends Controller
 
         // Mise à jour des données de l'ingrédient
         $category->name = $validator->validated()['name'];
-        $category->quantity = $validator->validated()['quantity'];
+        if (isset($validator->validated()['isMocktail'])) {
+            $category->isMocktail = $validator->validated()['isMocktail'];
+        }
 
         $category->save();
 

@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, of, catchError, tap, map, shareReplay } from 'rxjs';
 import { environment } from '../../environments/environment';
 
@@ -96,6 +96,7 @@ export class CocktailService {
 
   // Créer un nouveau cocktail (nécessite authentification)
   createCocktail(cocktailData: any): Observable<any> {
+    // Ne pas définir de Content-Type pour FormData, laissez le navigateur le faire
     return this.http.post<any>(`${this.apiUrl}/recipes`, cocktailData).pipe(
       tap(() => this.clearCache()) // Vider le cache après création
     );
