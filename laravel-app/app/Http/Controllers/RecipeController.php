@@ -279,4 +279,28 @@ class RecipeController extends Controller
             return ResponseApi::sendApiResponse('success', 'Cocktail supprimé avec succès.', null, 200);
         }
     }
+    public function filter(Request $request)
+{
+    $query = Recipe::query();
+
+    if ($request->has('category_id')) {
+        $query->where('category_id', $request->category_id);
+    }
+
+    if ($request->has('glass_id')) {
+        $query->where('glass_id', $request->glass_id);
+    }
+
+    if ($request->has('ingredient_ids')) {
+        $ingredientIds = explode(',', $request->ingredient_ids);
+        $query->whereHas('ingredients', function($q) use ($ingredientIds) {
+            $q->whereIn('ingredient_id', $ingredientIds);
+        });
+    }
+
+    $recipes = $query->get();
+
+    return response()->json($recipes);
+}
+
 }

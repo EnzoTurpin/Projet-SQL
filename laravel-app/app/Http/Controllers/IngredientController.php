@@ -7,13 +7,15 @@ use App\Scripts\ResponseApi;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
+use App\Models\Category;
+
 
 class IngredientController extends Controller
 {
-    public function index() {
-        $ingredients = Ingredient::all();
-        return response()->json($ingredients);
-    }
+    public function index()
+{
+    return response()->json(Category::all()); // Ou Glass::all(), Ingredient::all()
+}
 
     protected function create(Request $request) {
         // Validation des données de l'ingrédient
@@ -90,4 +92,6 @@ class IngredientController extends Controller
             return ResponseApi::sendApiResponse('success', 'Ingrédient supprimé avec succès.', null, 0);
         }
     }
+
+    
 }

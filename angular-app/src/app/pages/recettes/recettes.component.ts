@@ -11,6 +11,11 @@ import { switchMap, catchError, tap } from 'rxjs/operators';
 import { HttpClient } from '@angular/common/http';
 import { RecetteService } from '../../services/recette.service';
 import { CocktailService } from '../../services/cocktail.service';
+import {
+  Category,
+  Glass,
+  Ingredient,
+} from '../../interfaces/filters.interface';
 
 @Component({
   selector: 'app-recettes',
@@ -34,6 +39,13 @@ export class RecettesComponent implements OnInit, OnDestroy {
   recettes: Recette[] = [];
   favoriteIds: Set<string> = new Set<string>();
   defaultImage = 'https://dummyimage.com/400x300/eeeeee/aaa?text=Cocktail';
+  categories: Category[] = [];
+  glasses: Glass[] = [];
+  ingredients: Ingredient[] = [];
+
+  selectedCategory: string = '';
+  selectedGlass: string = '';
+  selectedIngredients: string[] = [];
 
   constructor(
     private readonly router: Router,
@@ -50,6 +62,38 @@ export class RecettesComponent implements OnInit, OnDestroy {
 
     // Vérifier l'authentification locale sans tenter de logout
     this.isAuthenticatedLocally = this.authService.isAuthenticated();
+
+    // Chargement des filtres dynamiques
+    this.cocktailService.getFilters().subscribe((filters) => {
+      this.categories = filters.categories;
+      this.glasses = filters.glasses;
+      this.ingredients = filters.ingredients;
+    });
+  }
+
+  loadRecettes() {
+    this.recetteService.getRecettes().subscribe((data: Recette[]) => {
+      this.recettes = data || [];
+
+      if (this.isAuthenticatedLocally) {
+        this.checkingAuth = true;
+        this.authService
+          .getUserSilent()
+          .pipe(catchError(() => of(null)))
+          .subscribe((user) => {
+            this.checkingAuth = false;
+            this.isAuthenticatedOnServer = !!user;
+
+            if (this.isAuthenticatedOnServer) {
+              this.favoriteService.getFavorites().subscribe((favList) => {
+                this.favoriteIds = new Set(
+                  favList.map((fav: any) => fav._id || fav.id)
+                );
+              });
+            }
+          });
+      }
+    });
 
     // Activer le mode debug pour voir les données reçues de l'API
     this.recetteService.getRecettes().subscribe((data: Recette[]) => {
@@ -142,15 +186,46 @@ export class RecettesComponent implements OnInit, OnDestroy {
   }
 
   get filteredRecettes(): Recette[] {
-    if (!this.searchTerm) return this.recettes;
-    return this.recettes.filter(
-      (recette) =>
+    return this.recettes.filter((recette) => {
+      const matchesSearch =
+        !this.searchTerm ||
         recette.name.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
         recette.description
           .toLowerCase()
-          .includes(this.searchTerm.toLowerCase())
-    );
+          .includes(this.searchTerm.toLowerCase());
+
+      const matchesCategory =
+        !this.selectedCategory || recette.category === this.selectedCategory;
+
+      const matchesGlass =
+        !this.selectedGlass || recette.glass === this.selectedGlass;
+
+      const matchesIngredients =
+        this.selectedIngredients.length === 0 ||
+        this.selectedIngredients.every((ing) =>
+          recette.ingredients?.includes(ing)
+        );
+
+      return (
+        matchesSearch && matchesCategory && matchesGlass && matchesIngredients
+      );
+    });
+  } // Ajouter cette méthode pour gérer l'ajout d'un ingrédient
+  addIngredient(event: any): void {
+    const ingredient = event.target.value;
+    if (ingredient && !this.selectedIngredients.includes(ingredient)) {
+      this.selectedIngredients.push(ingredient);
+    }
+    // Réinitialiser le sélecteur
+    event.target.value = '';
   }
+
+  // Ajouter cette méthode pour supprimer un ingrédient
+  removeIngredient(ingredient: string): void {
+    this.selectedIngredients = this.selectedIngredients.filter(
+      (ing) => ing !== ingredient
+    );
+  } // Ajouter cette méthode pour gérer l'ajout d'un ingrédient
 
   /* =========  Gestion des favoris  ========== */
   isFavorite(recette: Recette): boolean {

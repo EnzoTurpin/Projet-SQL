@@ -13,6 +13,8 @@ export interface Recette {
   garnish?: string;
   category_id?: string;
   isMocktail?: boolean;
+  category?: string; // ✅ Ajouté
+  glass?: string;
 }
 
 export interface Ingredient {

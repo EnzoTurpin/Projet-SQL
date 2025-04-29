@@ -101,6 +101,11 @@ Route::get('/categories/{id}', [CategoryController::class, 'show']);
 // Route de test pour les recettes (accessible sans authentification)
 Route::get('/test-recipes', [RecipeController::class, 'testRecipes']);
 
+// Route pour filtrage 
+Route::get('/categories', [CategoryController::class, 'index']);
+Route::get('/glasses', [GlassController::class, 'index']);
+Route::get('/ingredients', [IngredientController::class, 'index']);
+
 Route::get('/garnishes', [GarnishController::class, 'index']);
 Route::get('/garnishes/{id}', [GarnishController::class, 'show']);
 

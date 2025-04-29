@@ -10,11 +10,10 @@ use Illuminate\Support\Facades\Validator;
 
 class CategoryController extends Controller
 {
-    public function index() {
-        $recipe = Category::all();
-        
-        return response()->json($recipe);
-    }
+    public function index()
+{
+    return response()->json(Category::all()); // Ou Glass::all(), Ingredient::all()
+}
 
     public function create(Request $request){
         return Validator::make($request->all(), [
@@ -92,4 +91,6 @@ class CategoryController extends Controller
             return ResponseApi::sendApiResponse('success', 'Ingrédient supprimé avec succès.', null, 0);
         }
     }
+
+    
 }
