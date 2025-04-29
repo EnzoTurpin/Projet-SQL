@@ -249,39 +249,26 @@
       <!-- Mocktail option -->
       <div class="mt-4">
         <label class="block text-gray-700 mb-2 text-sm sm:text-base"
-          >Type de boisson</label
+          >Catégorie</label
         >
-        <div class="flex items-center space-x-6">
-          <div class="flex items-center">
-            <input
-              type="radio"
-              id="cocktailOption"
-              name="isMocktail"
-              [value]="false"
-              formControlName="isMocktail"
-              class="w-4 h-4 text-tropical-vibes"
-            />
-            <label
-              for="cocktailOption"
-              class="ml-2 text-gray-700 text-sm sm:text-base"
-              >Cocktail (avec alcool)</label
-            >
-          </div>
-          <div class="flex items-center">
-            <input
-              type="radio"
-              id="mocktailOption"
-              name="isMocktail"
-              [value]="true"
-              formControlName="isMocktail"
-              class="w-4 h-4 text-tropical-vibes"
-            />
-            <label
-              for="mocktailOption"
-              class="ml-2 text-gray-700 text-sm sm:text-base"
-              >Mocktail (sans alcool)</label
-            >
-          </div>
+        <select
+          formControlName="category_id"
+          class="w-full appearance-none bg-white border border-gray-300 rounded-md py-2 px-4 pr-8 leading-tight focus:outline-none focus:ring-2 focus:ring-tropical-vibes focus:border-transparent"
+          [ngClass]="{
+            'border-red-500':
+              formSubmitted && cocktailForm.get('category_id')?.invalid
+          }"
+        >
+          <option value="">Choisir une catégorie</option>
+          <option *ngFor="let category of categories" [value]="category._id">
+            {{ category.name }}
+          </option>
+        </select>
+        <div
+          *ngIf="formSubmitted && cocktailForm.get('category_id')?.invalid"
+          class="text-red-500 text-xs mt-1"
+        >
+          Veuillez sélectionner une catégorie.
         </div>
       </div>
 

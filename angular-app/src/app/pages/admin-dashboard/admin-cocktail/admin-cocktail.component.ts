@@ -17,6 +17,7 @@ import {
   Ingredient,
 } from '../../../services/ingredient.service';
 import { GarnishService, Garnish } from '../../../services/garnish.service';
+import { Category } from '../../../interfaces/filters.interface';
 
 @Component({
   selector: 'app-admin-cocktail',
@@ -45,6 +46,7 @@ export class AdminCocktailComponent implements OnInit {
   glasses: Glass[] = [];
   allIngredients: Ingredient[] = [];
   garnishes: Garnish[] = [];
+  categories: Category[] = []; // Liste des catégories (Cocktail, Mocktail, etc.)
 
   constructor(
     private fb: FormBuilder,
@@ -61,6 +63,22 @@ export class AdminCocktailComponent implements OnInit {
     this.loadGlasses();
     this.loadIngredients();
     this.loadGarnishes();
+    this.loadCategories();
+  }
+
+  // Charger les catégories pour la liste déroulante
+  loadCategories(): void {
+    this.cocktailService.getFilters().subscribe({
+      next: (filters) => {
+        this.categories = filters.categories;
+        // Tri alphabétique des catégories
+        this.categories.sort((a, b) => a.name.localeCompare(b.name));
+        console.log('Catégories chargées:', this.categories);
+      },
+      error: (error) => {
+        console.error('Erreur lors du chargement des catégories', error);
+      },
+    });
   }
 
   // Charger les types de verres pour la liste déroulante
@@ -117,7 +135,7 @@ export class AdminCocktailComponent implements OnInit {
       glassType: [''], // Type de verre
       alcoholLevel: [''], // Niveau d'alcool
       garnish: [''], // Garniture
-      isMocktail: [false], // false = cocktail, true = mocktail
+      category_id: ['', Validators.required], // Catégorie obligatoire
     });
   }
 
@@ -247,10 +265,10 @@ export class AdminCocktailComponent implements OnInit {
     formData.append('description', rawFormData.description);
     formData.append('difficulty', rawFormData.difficulty);
     formData.append('preparationTime', preparationTime);
-    formData.append(
-      'isMocktail',
-      rawFormData.isMocktail === true ? 'true' : 'false'
-    );
+    formData.append('glassType', rawFormData.glassType);
+    formData.append('alcoholLevel', rawFormData.alcoholLevel);
+    formData.append('garnish', rawFormData.garnish);
+    formData.append('category_id', rawFormData.category_id); // Utilise category_id au lieu de isMocktail
 
     // Ajouter l'image si elle existe
     if (this.selectedFile) {
@@ -263,9 +281,6 @@ export class AdminCocktailComponent implements OnInit {
       'instructions',
       JSON.stringify(rawFormData.instructions.map((i: any) => i.step))
     );
-    formData.append('glassType', rawFormData.glassType || '');
-    formData.append('alcoholLevel', rawFormData.alcoholLevel || '');
-    formData.append('garnish', rawFormData.garnish || '');
 
     this.isLoading = true;
 
@@ -361,7 +376,12 @@ export class AdminCocktailComponent implements OnInit {
       glassType: [cocktail.glassType || ''],
       alcoholLevel: [cocktail.alcoholLevel || ''],
       garnish: [cocktail.garnish || ''],
-      isMocktail: [cocktail.isMocktail || false],
+      category_id: [
+        cocktail.category_id ||
+          this.getCategoryIdByName(cocktail.category) ||
+          '',
+        Validators.required,
+      ],
     });
   }
 
@@ -421,5 +441,26 @@ export class AdminCocktailComponent implements OnInit {
     this.statusMessage = message;
     this.isSuccess = false;
     this.isLoading = false;
+  }
+
+  // Méthode pour obtenir l'ID de catégorie à partir du nom
+  getCategoryIdByName(categoryName: string | undefined): string {
+    if (!categoryName || !this.categories || this.categories.length === 0)
+      return '';
+
+    const category = this.categories.find(
+      (c) => c.name.toLowerCase() === categoryName?.toLowerCase()
+    );
+
+    return category?._id || '';
+  }
+
+  // Pour vérifier si une recette est un mocktail (pour la rétrocompatibilité)
+  isMocktail(categoryId: string): boolean {
+    if (!categoryId || !this.categories || this.categories.length === 0)
+      return false;
+
+    const category = this.categories.find((c) => c._id === categoryId);
+    return category?.name?.toLowerCase() === 'mocktail';
   }
 }

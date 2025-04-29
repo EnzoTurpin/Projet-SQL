@@ -303,4 +303,71 @@ class RecipeController extends Controller
     return response()->json($recipes);
 }
 
+    public function testRecipes()
+    {
+        // Créer des recettes de test statiques pour le débogage
+        $testRecipes = [
+            [
+                'id' => 'test-recipe-1',
+                'name' => 'Mojito de Test',
+                'description' => 'Un mojito de test pour déboguer l\'application',
+                'image' => 'https://images.unsplash.com/photo-1551538827-9c037cb4f32a?w=800&auto=format&fit=crop&q=60',
+                'difficulty' => 'Facile',
+                'preparationTime' => '5 min',
+                'ingredients' => [
+                    ['name' => 'Rhum', 'quantity' => '50 ml'],
+                    ['name' => 'Menthe', 'quantity' => '10 feuilles'],
+                    ['name' => 'Sucre', 'quantity' => '2 cuillères à café']
+                ],
+                'instructions' => ['Mélangez tous les ingrédients dans un verre avec de la glace.'],
+                'glassType' => 'Verre à cocktail',
+                'alcoholLevel' => '40',
+                'garnish' => 'Citron vert',
+                'category' => ['name' => 'Cocktail'],
+                'glass' => ['name' => 'Verre à cocktail'],
+                'isMocktail' => false
+            ],
+            [
+                'id' => 'test-recipe-2',
+                'name' => 'Mocktail de Test',
+                'description' => 'Un mocktail de test sans alcool',
+                'image' => 'https://images.unsplash.com/photo-1621881538090-b2b5ffaa25ce?w=800&auto=format&fit=crop&q=60',
+                'difficulty' => 'Facile',
+                'preparationTime' => '3 min',
+                'ingredients' => [
+                    ['name' => 'Jus d\'orange', 'quantity' => '100 ml'],
+                    ['name' => 'Sirop de grenadine', 'quantity' => '20 ml']
+                ],
+                'instructions' => ['Mélangez les ingrédients dans un verre.', 'Ajoutez des glaçons.'],
+                'glassType' => 'Verre à jus',
+                'alcoholLevel' => '0',
+                'garnish' => 'Tranche d\'orange',
+                'category' => ['name' => 'Mocktail'],
+                'glass' => ['name' => 'Verre à jus'],
+                'isMocktail' => true
+            ],
+            [
+                'id' => 'test-recipe-3',
+                'name' => 'Piña Colada de Test',
+                'description' => 'Une piña colada pour tester l\'affichage',
+                'image' => 'https://images.unsplash.com/photo-1662487034741-3beb6812793d?w=800&auto=format&fit=crop&q=60',
+                'difficulty' => 'Moyen',
+                'preparationTime' => '10 min',
+                'ingredients' => [
+                    ['name' => 'Rhum blanc', 'quantity' => '50 ml'],
+                    ['name' => 'Lait de coco', 'quantity' => '30 ml'],
+                    ['name' => 'Jus d\'ananas', 'quantity' => '90 ml']
+                ],
+                'instructions' => ['Mélangez tous les ingrédients dans un blender avec de la glace.', 'Mixez jusqu\'à obtenir une consistance lisse.'],
+                'glassType' => 'Verre à cocktail',
+                'alcoholLevel' => '35',
+                'garnish' => 'Tranche d\'ananas',
+                'category' => ['name' => 'Cocktail'],
+                'glass' => ['name' => 'Verre à cocktail'],
+                'isMocktail' => false
+            ],
+        ];
+
+        return response()->json($testRecipes);
+    }
 }

@@ -9,6 +9,7 @@ use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\FavoriteRecipeController;
 use App\Http\Controllers\UnbanRequestController;
+use App\Http\Controllers\FilterController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use App\Http\Controllers\DiagnosticController;
@@ -20,6 +21,9 @@ Route::middleware(['web', 'auth:sanctum'])->get('/auth/check', [AuthController::
 // Routes publiques
 Route::post('/register', [UserController::class, 'store']);
 Route::post('/login', [AuthController::class, 'login'])->middleware('web');
+
+// Route for filters (combined categories, glasses, ingredients)
+Route::get('/filters', [FilterController::class, 'index']);
 
 // Route publique de création de demande (mais avec middleware "web" pour la gestion CSRF/session)
 Route::post('/unban-requests', [UnbanRequestController::class, 'store'])->middleware('web');
@@ -166,4 +170,26 @@ Route::middleware(['web','auth:sanctum'])->group(function () {
     Route::get('/favorites', [FavoriteRecipeController::class, 'index']);
     Route::post('/favorites/{recipeId}', [FavoriteRecipeController::class, 'store']);
     Route::delete('/favorites/{recipeId}', [FavoriteRecipeController::class, 'destroy']);
+});
+
+Route::get('/add-categories', function() {
+    try {
+        $cocktail = \App\Models\Category::firstOrCreate(['name' => 'Cocktail']);
+        $mocktail = \App\Models\Category::firstOrCreate(['name' => 'Mocktail']);
+        
+        return response()->json([
+            'success' => true,
+            'message' => 'Catégories Mocktail et Cocktail ajoutées avec succès',
+            'categories' => [
+                'cocktail' => $cocktail,
+                'mocktail' => $mocktail
+            ]
+        ]);
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Erreur lors de l\'ajout des catégories',
+            'error' => $e->getMessage()
+        ], 500);
+    }
 });

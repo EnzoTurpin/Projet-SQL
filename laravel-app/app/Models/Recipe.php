@@ -24,13 +24,12 @@ class Recipe extends Model
         'alcoholLevel',  // Niveau d'alcool en %
         'garnish',       // Garniture
         'category_id',   // ID de la catégorie
+        'glass_id',      // ID du verre
         'isMocktail'     // Si c'est un mocktail (sans alcool)
     ];
 
-    protected $appends = [
-        // Ajoute automatiquement l'URL complète dans le champ image
-        // sans toucher à la valeur stockée en base
-    ];
+    // S'assurer que ces champs sont toujours inclus dans les réponses JSON
+    protected $with = ['category', 'glass'];
 
     // Relation avec les ingrédients
     public function ingredients()
